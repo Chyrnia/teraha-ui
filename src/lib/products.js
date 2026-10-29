@@ -34,8 +34,8 @@ let categories = [
 	"Onesies"
 ];
 
-export async function getProducts(filters) {
-	const { search, categories } = filters;
+export async function getProducts(filters = {}) {
+	const { search = "", categories = [] } = filters;
 
 	let result = products;
 
