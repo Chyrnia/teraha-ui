@@ -1,0 +1,96 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { login } from "@/lib/auth.js";
+
+
+export default function LoginForm() {
+
+    const router = useRouter();
+
+    const [loginForm, setLoginForm] = useState({
+		username: "",
+		password: ""
+	});
+
+    function handleChange(e) {
+        const { name, value } = e.target;
+
+        setLoginForm(current => ({
+            ...current,
+            [name]: value
+        }));
+    }
+
+    async function handleSubmit(e) {
+        e.preventDefault();
+
+            await login(loginForm);
+
+        router.push("/dashboard/");
+    }
+
+    return (
+        <form
+            onSubmit={handleSubmit}
+            className="mt-6 bg-[#142126] border border-[#3D4A3E] rounded-xl p-6"
+        >
+            <div className="grid grid-cols-2 gap-6">
+
+                <div className="flex flex-col gap-2">
+                    <label
+                        htmlFor="username"
+                        className="text-xs text-[#BBCBBB]"
+                    >
+                        Username
+                    </label>
+
+                    <input
+                        id="username"
+                        name="username"
+                        type="text"
+                        value={loginForm.username}
+                        onChange={handleChange}
+                        className="bg-[#041015] border border-[#3D4A3E] rounded-md px-4 py-2 text-[#D7E5EC] outline-none focus:border-[#54E98A]"
+                    />
+                </div>
+
+                <div className="flex flex-col gap-2">
+                    <label
+                        htmlFor="password"
+                        className="text-xs text-[#BBCBBB]"
+                    >
+                        Password
+                    </label>
+
+                    <input
+                        id="password"
+                        name="password"
+                        type="password"
+                        value={loginForm.password}
+                        onChange={handleChange}
+                        className="bg-[#041015] border border-[#3D4A3E] rounded-md px-4 py-2 text-[#D7E5EC] outline-none focus:border-[#54E98A]"
+                    />
+                </div>
+            </div>
+
+            <div className="mt-8 flex justify-end gap-3">
+                <button
+                    type="button"
+                    onClick={() => router.push("/login")}
+                    className="px-4 py-2 rounded-md border border-[#3D4A3E] text-[#BBCBBB]"
+                >
+                    Cancelar
+                </button>
+
+                <button
+                    type="submit"
+                    className="px-4 py-2 rounded-md bg-[#54E98A] text-[#003919]"
+                >
+					Log In
+                </button>
+            </div>
+        </form>
+    );
+}
