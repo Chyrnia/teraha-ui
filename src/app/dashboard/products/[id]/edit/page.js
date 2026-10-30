@@ -1,35 +1,25 @@
-import { getProductById } from "@/lib/products.js";
-import ProductForm from "@/components/products/ProductForm.jsx";
+
+import EditProductClient from "@/components/products/EditProductClient.jsx";
 
 export default async function EditProductPage({ params }) {
-	const { id } = await params;
-	const product = await getProductById(id);
+    const { id } = await params;
 
-	if(!product){
-		return (
-			<section className="p-8">
-				<h1 className="text-2xl font-semibold">
-					Producto no encontrado
-				</h1>
-			</section>
-		);
-	}
+    return (
+        <section className="p-6 md:p-8">
+            <div className="mx-auto max-w-5xl">
+                <div className="mb-7">
+                    <h1 className="text-2xl font-semibold text-white">
+                        Editar producto
+                    </h1>
 
-	return (
-		<section className="p-8">
-			<div>
-				<h1 className="text-2xl font-semibold">
-					Editar Producto
-				</h1>
-				<p className="mt-1 text-sm text-[#A4BCC7]">
-					Modifica los datos del producto.
-				</p>
-			</div>
+                    <p className="mt-1 text-sm text-[#8FA4A8]">
+                        Modificá los datos del producto.
+                    </p>
+                </div>
 
-			<ProductForm
-				product={product}
-				mode="edit"
-			/>
-		</section>
-	);
+                <EditProductClient id={id} />
+            </div>
+        </section>
+    );
 }
+
