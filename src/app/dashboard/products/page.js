@@ -11,19 +11,32 @@ export default function ProductsPage(){
 	const [ search, setSearch ] = useState("");
 	const [ categories, setCategories ] = useState([]);
 	const [ products, setProducts ] = useState([]);
+	const [ page, setPage ] = useState(0);
+	const [ totalPages, setTotalPages ] = useState(0);
+	const [ isLoading, setIsLoading ] = useState(false);
+	const [refreshKey, setRefreshKey] = useState(0);
 
 	const filters = {
 		search,
-		categories
+		categories,
+		page
 	};
 
 	useEffect(() => {
 		async function fetchProducts(){
+			setIsLoading(true);
+			try{
 			const response = await getProducts(filters);
-			setProducts(response);
+			setProducts(response.content);
+			setTotalPages(response.totalPages);
+			} catch (error) {
+				console.error("Failed to fetch products: " + error);
+			} finally {
+				setIsLoading(false);
+			}
 		}
 		fetchProducts();
-	},[search, categories]);
+	},[search, page, refreshKey]);
 
 	function addCategory(newCat){
 		if(!categories.includes(newCat))
@@ -32,6 +45,14 @@ export default function ProductsPage(){
 
 	function removeCategory(oldCat){
 		setCategories(current => current.filter(cat => cat !== oldCat));
+	}
+
+	function handleProductDeactivated() {
+		if (products.length === 1 && page > 0) {
+			setPage(current => current - 1);
+		} else {
+			setRefreshKey(current => current + 1);
+		}
 	}
 
 	return (
@@ -58,7 +79,14 @@ export default function ProductsPage(){
 			/>
 
 		{/* Product list */}
-			<ProductList products={products}/>
+			<ProductList 
+				products={products} 
+				page={page}
+				totalPages={totalPages}
+				onPageChange={setPage}
+				loading={isLoading}
+				onProductDeactivated={handleProductDeactivated}
+			/>
 		</section>
 	);
 }
