@@ -1,193 +1,463 @@
+
 "use client";
 
-import { useRouter } from 'next/navigation';
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import {
+    Boxes,
+    Building2,
+    CircleAlert,
+    LoaderCircle,
+    Search,
+    X,
+} from "lucide-react";
+
 import { createProduct, updateProduct } from "@/lib/products.js";
+import { getSuppliers } from "@/lib/suppliers.js";
 
 const INITIAL_PRODUCT = {
-	code: "",
-	description: "",
-	price: "",
-	cost: "",
-	stock: "",
-	margin: "",
-	category: ""
+    code: "",
+    description: "",
+    price: "",
+    margin: "",
+    supplierIds: [],
 };
 
-export default function ProductForm({ product: initialProduct, mode = "create" }) {
-	const router = useRouter();
-	const [product, setProduct] = useState(initialProduct ?? INITIAL_PRODUCT);
+const inputClass =
+    "w-full rounded-lg border border-[#354C56] bg-[#08151A] px-3.5 py-3 text-sm text-[#D7E5EC] outline-none transition placeholder:text-[#5F777D] focus:border-[#54E98A] focus:ring-2 focus:ring-[#54E98A]/10 disabled:opacity-60";
 
-	function handleChange(e) {
-		const { name, value } = e.target;
+const labelClass =
+    "mb-2 block text-xs font-semibold tracking-wide text-[#BBCBBB]";
 
-		setProduct(current => ({
-			...current,
-			[name]: value
-		}));
-	}
+export default function ProductForm({
+    product: initialProduct,
+    mode = "create",
+}) {
+    const router = useRouter();
 
-	async function handleSubmit(e) {
-		e.preventDefault();
-		if(mode === "edit"){
-			await updateProduct(product.id, product);
-		} else {
-			await createProduct(product);
-		}
+    const [product, setProduct] = useState(() => ({
+        ...INITIAL_PRODUCT,
+        ...initialProduct,
+        price: initialProduct?.price ?? "",
+        margin: initialProduct?.margin ?? "",
+        supplierIds: (initialProduct?.supplierIds ?? []).map(Number),
+    }));
 
-		router.push("/dashboard/products/");
-	}
+    const [suppliers, setSuppliers] = useState([]);
+    const [supplierSearch, setSupplierSearch] = useState("");
+    const [loadingSuppliers, setLoadingSuppliers] = useState(true);
+    const [supplierError, setSupplierError] = useState("");
 
-	return (
-		<form
-			onSubmit={handleSubmit}
-			className="mt-6 bg-[#142126] border border-[#3D4A3E] rounded-xl p-6"
-		>
-			<div className="grid grid-cols-2 gap-6">
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState("");
 
-				<div className="flex flex-col gap-2">
-					<label
-						htmlFor="code"
-						className="text-xs text-[#BBCBBB]"
-					>
-						CÓDIGO
-					</label>
+    useEffect(() => {
+        let cancelled = false;
 
-					<input
-						id="code"
-						name="code"
-						type="text"
-						value={product.code}
-						onChange={handleChange}
-						className="bg-[#041015] border border-[#3D4A3E] rounded-md px-4 py-2 text-[#D7E5EC] outline-none focus:border-[#54E98A]"
-					/>
-				</div>
+        async function fetchSuppliers() {
+            try {
+                setLoadingSuppliers(true);
+                setSupplierError("");
 
-				<div className="flex flex-col gap-2">
-					<label
-						htmlFor="category"
-						className="text-xs text-[#BBCBBB]"
-					>
-						CATEGORÍA
-					</label>
+                const result = await getSuppliers();
 
-					<input
-						id="category"
-						name="category"
-						type="text"
-						value={product.category}
-						onChange={handleChange}
-						className="bg-[#041015] border border-[#3D4A3E] rounded-md px-4 py-2 text-[#D7E5EC] outline-none focus:border-[#54E98A]"
-					/>
-				</div>
+                if (!cancelled) {
+                    setSuppliers(result);
+                }
+            } catch (err) {
+                if (!cancelled) {
+                    setSupplierError("No se pudieron cargar los proveedores.");
+                }
+            } finally {
+                if (!cancelled) {
+                    setLoadingSuppliers(false);
+                }
+            }
+        }
 
-				<div className="col-span-2 flex flex-col gap-2">
-					<label
-						htmlFor="description"
-						className="text-xs text-[#BBCBBB]"
-					>
-						DESCRIPCIÓN
-					</label>
+        fetchSuppliers();
 
-					<input
-						id="description"
-						name="description"
-						type="text"
-						value={product.description}
-						onChange={handleChange}
-						className="bg-[#041015] border border-[#3D4A3E] rounded-md px-4 py-2 text-[#D7E5EC] outline-none focus:border-[#54E98A]"
-					/>
-				</div>
+        return () => {
+            cancelled = true;
+        };
+    }, []);
 
-				<div className="flex flex-col gap-2">
-					<label
-						htmlFor="price"
-						className="text-xs text-[#BBCBBB]"
-					>
-						PRECIO
-					</label>
+    function handleChange(e) {
+        const { name, value } = e.target;
 
-					<input
-						id="price"
-						name="price"
-						type="number"
-						value={product.price}
-						onChange={handleChange}
-						className="bg-[#041015] border border-[#3D4A3E] rounded-md px-4 py-2 text-[#D7E5EC] outline-none focus:border-[#54E98A]"
-					/>
-				</div>
+        setProduct((current) => ({
+            ...current,
+            [name]: value,
+        }));
+    }
 
-				<div className="flex flex-col gap-2">
-					<label
-						htmlFor="cost"
-						className="text-xs text-[#BBCBBB]"
-					>
-						COSTO
-					</label>
+    function handleSupplierToggle(id, checked) {
+        setProduct((current) => ({
+            ...current,
+            supplierIds: checked
+                ? [...current.supplierIds, id]
+                : current.supplierIds.filter((supplierId) => supplierId !== id),
+        }));
+    }
 
-					<input
-						id="cost"
-						name="cost"
-						type="number"
-						value={product.cost}
-						onChange={handleChange}
-						className="bg-[#041015] border border-[#3D4A3E] rounded-md px-4 py-2 text-[#D7E5EC] outline-none focus:border-[#54E98A]"
-					/>
-				</div>
+    function removeSupplier(id) {
+        setProduct((current) => ({
+            ...current,
+            supplierIds: current.supplierIds.filter(
+                (supplierId) => supplierId !== id
+            ),
+        }));
+    }
 
-				<div className="flex flex-col gap-2">
-					<label
-						htmlFor="stock"
-						className="text-xs text-[#BBCBBB]"
-					>
-						STOCK
-					</label>
+    const selectedSuppliers = suppliers.filter((supplier) =>
+        product.supplierIds.includes(Number(supplier.id))
+    );
 
-					<input
-						id="stock"
-						name="stock"
-						type="number"
-						value={product.stock}
-						onChange={handleChange}
-						className="bg-[#041015] border border-[#3D4A3E] rounded-md px-4 py-2 text-[#D7E5EC] outline-none focus:border-[#54E98A]"
-					/>
-				</div>
+    const filteredSuppliers = suppliers.filter((supplier) => {
+        const query = supplierSearch.trim().toLowerCase();
 
-				<div className="flex flex-col gap-2">
-					<label
-						htmlFor="margin"
-						className="text-xs text-[#BBCBBB]"
-					>
-						MARGEN (%)
-					</label>
+        return (
+            supplier.name.toLowerCase().includes(query) ||
+            (supplier.document ?? "").toLowerCase().includes(query)
+        );
+    });
 
-					<input
-						id="margin"
-						name="margin"
-						type="number"
-						value={product.margin}
-						onChange={handleChange}
-						className="bg-[#041015] border border-[#3D4A3E] rounded-md px-4 py-2 text-[#D7E5EC] outline-none focus:border-[#54E98A]"
-					/>
-				</div>
-			</div>
+    async function handleSubmit(e) {
+        e.preventDefault();
 
-			<div className="mt-8 flex justify-end gap-3">
-				<button
-					type="button"
-					onClick={ () => router.push("/dashboard/products")}
-					className="px-4 py-2 rounded-md border border-[#3D4A3E] text-[#BBCBBB]"
-				>
-					Cancelar
-				</button>
+        if (isSubmitting) return;
 
-				<button
-					type="submit"
-					className="px-4 py-2 rounded-md bg-[#54E98A] text-[#003919]"
-				>
-					{mode === "edit" ? "Guardar Cambios" : "Crear Producto" }
-				</button>
-			</div>
-		</form>
-	);
+        setError("");
+        setIsSubmitting(true);
+
+        const payload = {
+            ...product,
+            price: Number(product.price),
+            margin: Number(product.margin),
+            supplierIds: product.supplierIds,
+        };
+
+        try {
+            if (mode === "edit") {
+                await updateProduct(product.id, payload);
+            } else {
+                await createProduct(payload);
+            }
+
+            router.push("/dashboard/products");
+        } catch (err) {
+            setError(
+                err instanceof Error
+                    ? err.message
+                    : "No se pudo guardar el producto."
+            );
+        } finally {
+            setIsSubmitting(false);
+        }
+    }
+
+    return (
+        <form
+            onSubmit={handleSubmit}
+            className="mt-6 overflow-hidden rounded-2xl border border-[#3D4A3E] bg-[#142126] shadow-xl shadow-black/10"
+        >
+            <div className="grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr]">
+
+                {/* Product information */}
+                <section className="p-6 sm:p-8">
+                    <div className="mb-7 flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#54E98A]/10 text-[#54E98A]">
+                            <Boxes size={21} />
+                        </div>
+
+                        <div>
+                            <h2 className="text-base font-semibold text-white">
+                                Información del producto
+                            </h2>
+                            <p className="mt-0.5 text-xs text-[#7F9699]">
+                                Datos generales y comerciales.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="space-y-5">
+                        <div>
+                            <label htmlFor="code" className={labelClass}>
+                                CÓDIGO
+                            </label>
+
+                            <input
+                                id="code"
+                                name="code"
+                                type="text"
+                                value={product.code}
+                                onChange={handleChange}
+                                placeholder="Ej. PROD-001"
+                                required
+                                disabled={isSubmitting}
+                                className={inputClass}
+                            />
+                        </div>
+
+                        <div>
+                            <label htmlFor="description" className={labelClass}>
+                                DESCRIPCIÓN
+                            </label>
+
+                            <input
+                                id="description"
+                                name="description"
+                                type="text"
+                                value={product.description}
+                                onChange={handleChange}
+                                placeholder="Nombre o descripción del producto"
+                                required
+                                disabled={isSubmitting}
+                                className={inputClass}
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label htmlFor="price" className={labelClass}>
+                                    PRECIO
+                                </label>
+
+                                <input
+                                    id="price"
+                                    name="price"
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    value={product.price}
+                                    onChange={handleChange}
+                                    placeholder="0.00"
+                                    required
+                                    disabled={isSubmitting}
+                                    className={inputClass}
+                                />
+                            </div>
+
+                            <div>
+                                <label htmlFor="margin" className={labelClass}>
+                                    MARGEN (%)
+                                </label>
+
+                                <input
+                                    id="margin"
+                                    name="margin"
+                                    type="number"
+                                    min="0"
+                                    max="100"
+                                    step="0.01"
+                                    value={product.margin}
+                                    onChange={handleChange}
+                                    placeholder="0.00"
+                                    required
+                                    disabled={isSubmitting}
+                                    className={inputClass}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Supplier selection */}
+                <section className="border-t border-[#3D4A3E] bg-[#101D22]/50 p-6 sm:p-8 lg:border-t-0 lg:border-l">
+                    <div className="mb-6 flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#54E98A]/10 text-[#54E98A]">
+                            <Building2 size={21} />
+                        </div>
+
+                        <div>
+                            <h2 className="text-base font-semibold text-white">
+                                Proveedores
+                            </h2>
+                            <p className="mt-0.5 text-xs text-[#7F9699]">
+                                Asociá uno o varios proveedores.
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Selected suppliers */}
+                    <div className="mb-5">
+                        <div className="mb-3 flex items-center justify-between">
+                            <span className={labelClass}>
+                                SELECCIONADOS
+                            </span>
+
+                            <span className="rounded-full bg-[#54E98A]/10 px-2.5 py-1 text-xs font-medium text-[#54E98A]">
+                                {product.supplierIds.length}
+                            </span>
+                        </div>
+
+                        {selectedSuppliers.length > 0 ? (
+                            <div className="flex flex-wrap gap-2">
+                                {selectedSuppliers.map((supplier) => (
+                                    <span
+                                        key={supplier.id}
+                                        className="inline-flex items-center gap-2 rounded-lg border border-[#54E98A]/20 bg-[#54E98A]/[0.07] px-3 py-2 text-xs text-[#D7E5EC]"
+                                    >
+                                        {supplier.name}
+
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                removeSupplier(Number(supplier.id))
+                                            }
+                                            aria-label={`Quitar ${supplier.name}`}
+                                            disabled={isSubmitting}
+                                            className="text-[#7F9699] transition hover:text-white"
+                                        >
+                                            <X size={14} />
+                                        </button>
+                                    </span>
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="rounded-lg border border-dashed border-[#354C56] px-4 py-4 text-center text-xs text-[#718A8F]">
+                                Todavía no hay proveedores seleccionados.
+                            </p>
+                        )}
+                    </div>
+
+                    {/* Supplier search */}
+                    <label htmlFor="supplier-search" className={labelClass}>
+                        DISPONIBLES
+                    </label>
+
+                    <div className="relative mb-3">
+                        <Search
+                            size={17}
+                            className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[#718A8F]"
+                        />
+
+                        <input
+                            id="supplier-search"
+                            type="search"
+                            value={supplierSearch}
+                            onChange={(e) => setSupplierSearch(e.target.value)}
+                            placeholder="Buscar proveedor..."
+                            disabled={loadingSuppliers || isSubmitting}
+                            className={`${inputClass} pl-10`}
+                        />
+                    </div>
+
+                    <div
+                        className="max-h-64 overflow-y-auto rounded-xl border border-[#354C56] bg-[#08151A]/70"
+                        aria-busy={loadingSuppliers}
+                    >
+                        {loadingSuppliers ? (
+                            <div className="flex items-center justify-center gap-2 p-8 text-sm text-[#8FA4A8]">
+                                <LoaderCircle
+                                    size={17}
+                                    className="animate-spin text-[#54E98A]"
+                                />
+                                Cargando proveedores...
+                            </div>
+                        ) : supplierError ? (
+                            <p className="p-5 text-center text-sm text-red-300">
+                                {supplierError}
+                            </p>
+                        ) : filteredSuppliers.length === 0 ? (
+                            <p className="p-5 text-center text-sm text-[#718A8F]">
+                                No se encontraron proveedores.
+                            </p>
+                        ) : (
+                            <div className="divide-y divide-[#354C56]/50">
+                                {filteredSuppliers.map((supplier) => {
+                                    const id = Number(supplier.id);
+                                    const checked =
+                                        product.supplierIds.includes(id);
+
+                                    return (
+                                        <label
+                                            key={supplier.id}
+                                            className={`flex cursor-pointer items-center gap-3 px-4 py-3 transition hover:bg-[#142126] ${
+                                                checked
+                                                    ? "bg-[#54E98A]/[0.04]"
+                                                    : ""
+                                            }`}
+                                        >
+                                            <input
+                                                type="checkbox"
+                                                checked={checked}
+                                                onChange={(e) =>
+                                                    handleSupplierToggle(
+                                                        id,
+                                                        e.target.checked
+                                                    )
+                                                }
+                                                disabled={isSubmitting}
+                                                className="h-4 w-4 shrink-0 accent-[#54E98A]"
+                                            />
+
+                                            <span className="min-w-0 flex-1">
+                                                <span className="block truncate text-sm text-[#D7E5EC]">
+                                                    {supplier.name}
+                                                </span>
+
+                                                {supplier.document && (
+                                                    <span className="mt-0.5 block text-xs text-[#718A8F]">
+                                                        {supplier.document}
+                                                    </span>
+                                                )}
+                                            </span>
+
+                                            {checked && (
+                                                <span className="text-xs font-medium text-[#54E98A]">
+                                                    Seleccionado
+                                                </span>
+                                            )}
+                                        </label>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
+                </section>
+            </div>
+
+            {/* Form error */}
+            {error && (
+                <div
+                    role="alert"
+                    className="mx-6 flex items-start gap-3 rounded-lg border border-red-400/20 bg-red-400/[0.07] p-4 text-sm text-red-200 sm:mx-8"
+                >
+                    <CircleAlert size={18} className="mt-0.5 shrink-0" />
+                    {error}
+                </div>
+            )}
+
+            {/* Actions */}
+            <footer className="flex flex-col-reverse gap-3 border-t border-[#3D4A3E] bg-[#101D22]/70 px-6 py-5 sm:flex-row sm:justify-end sm:px-8">
+                <button
+                    type="button"
+                    onClick={() => router.push("/dashboard/products")}
+                    disabled={isSubmitting}
+                    className="rounded-lg border border-[#3D4A3E] px-5 py-2.5 text-sm font-medium text-[#BBCBBB] transition hover:border-[#718A8F] hover:text-white disabled:opacity-50"
+                >
+                    Cancelar
+                </button>
+
+                <button
+                    type="submit"
+                    disabled={isSubmitting || loadingSuppliers}
+                    className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#54E98A] px-5 py-2.5 text-sm font-semibold text-[#003919] transition hover:bg-[#70F0A0] disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                    {isSubmitting ? (
+                        <>
+                            <LoaderCircle size={17} className="animate-spin" />
+                            Guardando...
+                        </>
+                    ) : mode === "edit" ? (
+                        "Guardar cambios"
+                    ) : (
+                        "Crear producto"
+                    )}
+                </button>
+            </footer>
+        </form>
+    );
 }
+
