@@ -1,63 +1,100 @@
+// src/components/purchases/SupplierSearchModal.jsx
 "use client";
 import { useState, useEffect } from "react";
 import { Search, Plus, X } from "lucide-react";
-
-// Mock inicial de proveedores (puedes mover esto a lib/suppliers.js más adelante)
-let mockSuppliers = [
-    { id: 1, name: "Distribuidora Mayorista S.A.", ruc: "80012345-6" },
-    { id: 2, name: "Importadora del Este", ruc: "80098765-1" }
-];
+import { getSuppliers, createSupplier } from "@/lib/suppliers";
 
 export default function SupplierSearchModal({ isOpen, onClose, onSelectSupplier }) {
     const [search, setSearch] = useState("");
-    const [suppliers, setSuppliers] = useState(mockSuppliers);
+    const [suppliers, setSuppliers] = useState([]);
     const [isCreating, setIsCreating] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
 
-    // Formulario para creación express de proveedor
-    const [newSupplier, setNewSupplier] = useState({ name: "", ruc: "" });
+    const [newSupplier, setNewSupplier] = useState({
+        name: "",
+        document: "",
+        timbrado: "",
+        address: "",
+        email: "",
+        phone: ""
+    });
 
+    // Carga dinámica desde el backend cuando cambia 'search' o se abre el modal
     useEffect(() => {
         if (isOpen) {
             setIsCreating(false);
-            setNewSupplier({ name: "", ruc: "" });
+            setError("");
+            
+            async function loadSuppliers() {
+                setLoading(true);
+                try {
+                    const data = await getSuppliers(search);
+                    setSuppliers(data);
+                } catch (err) {
+                    console.error("Error al cargar proveedores:", err);
+                } finally {
+                    setLoading(false);
+                }
+            }
+
+            // Un pequeño debounce para no saturar la API en cada tecla
+            const timer = setTimeout(() => {
+                loadSuppliers();
+            }, 300);
+
+            return () => clearTimeout(timer);
         }
-    }, [isOpen]);
+    }, [isOpen, search]);
 
     if (!isOpen) return null;
 
-    const filteredSuppliers = suppliers.filter(s =>
-        s.name.toLowerCase().includes(search.toLowerCase()) ||
-        s.ruc.includes(search)
-    );
+    // El filtrado ya se maneja desde el backend gracias a getSuppliers(search), 
+    // pero mantenemos esto por si recibimos la lista completa.
+    const filteredSuppliers = suppliers;
 
-    const handleCreateSubmit = (e) => {
+    const handleCreateSubmit = async (e) => {
         e.preventDefault();
-        if (!newSupplier.name.trim()) return;
+        setError("");
 
-        const created = {
-            id: Date.now(),
-            name: newSupplier.name,
-            ruc: newSupplier.ruc || "Sin RUC"
-        };
+        if (!newSupplier.name.trim() || !newSupplier.timbrado.trim()) {
+            setError("El nombre y el timbrado son obligatorios.");
+            return;
+        }
 
-        // Lo agregamos a la lista local y lo seleccionamos de inmediato
-        setSuppliers([created, ...suppliers]);
-        onSelectSupplier(created);
-        onClose();
+        setLoading(true);
+
+        try {
+            // Guardamos directamente en la base de datos del backend
+            const created = await createSupplier(newSupplier);
+
+            onSelectSupplier(created);
+            onClose();
+        } catch (err) {
+            setError(err.message || "Error al registrar el proveedor en el servidor.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-            <div className="w-full max-w-lg bg-[#142126] border border-[#3D4A3E] rounded-xl p-6 shadow-2xl">
+            <div className="w-full max-w-xl bg-[#142126] border border-[#3D4A3E] rounded-xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
                 {/* Cabecera */}
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="text-lg font-bold text-[#D7E5EC]">
-                        {isCreating ? "Registrar Nuevo Proveedor Express" : "Buscar Proveedor"}
+                        {isCreating ? "Registrar Nuevo Proveedor" : "Buscar Proveedor"}
                     </h3>
                     <button onClick={onClose} className="text-[#BBCBBB] hover:text-white">
                         <X size={20} />
                     </button>
                 </div>
+
+                {error && (
+                    <div className="mb-4 p-3 bg-red-500/10 border border-red-500 rounded-md text-red-400 text-xs">
+                        {error}
+                    </div>
+                )}
 
                 {!isCreating ? (
                     <>
@@ -86,7 +123,9 @@ export default function SupplierSearchModal({ isOpen, onClose, onSelectSupplier 
 
                         {/* Resultados */}
                         <div className="max-h-60 overflow-y-auto space-y-2">
-                            {filteredSuppliers.length > 0 ? (
+                            {loading ? (
+                                <p className="text-center py-4 text-[#BBCBBB] text-xs">Buscando en el servidor...</p>
+                            ) : filteredSuppliers.length > 0 ? (
                                 filteredSuppliers.map((s) => (
                                     <div
                                         key={s.id}
@@ -98,7 +137,7 @@ export default function SupplierSearchModal({ isOpen, onClose, onSelectSupplier 
                                     >
                                         <div>
                                             <p className="text-sm font-medium text-[#D7E5EC]">{s.name}</p>
-                                            <span className="text-xs text-[#BBCBBB]">RUC: {s.ruc}</span>
+                                            <span className="text-xs text-[#BBCBBB]">RUC/Doc: {s.document} | Timbrado: {s.timbrado}</span>
                                         </div>
                                         <span className="text-xs text-[#54E98A] font-semibold">Seleccionar</span>
                                     </div>
@@ -109,7 +148,7 @@ export default function SupplierSearchModal({ isOpen, onClose, onSelectSupplier 
                                     <button
                                         type="button"
                                         onClick={() => {
-                                            setNewSupplier({ name: search, ruc: "" });
+                                            setNewSupplier(prev => ({ ...prev, name: search }));
                                             setIsCreating(true);
                                         }}
                                         className="text-xs px-3 py-1.5 bg-[#354C56] text-[#54E98A] rounded-md border border-[#3D4A3E] hover:bg-[#3d5763]"
@@ -123,41 +162,92 @@ export default function SupplierSearchModal({ isOpen, onClose, onSelectSupplier 
                 ) : (
                     /* Formulario de Creación Express */
                     <form onSubmit={handleCreateSubmit} className="space-y-4">
-                        <div>
-                            <label className="block text-xs text-[#BBCBBB] mb-1">RAZÓN SOCIAL / NOMBRE</label>
-                            <input
-                                type="text"
-                                required
-                                autoFocus
-                                placeholder="Ej: Repuestos del Sur S.A."
-                                value={newSupplier.name}
-                                onChange={(e) => setNewSupplier({ ...newSupplier, name: e.target.value })}
-                                className="w-full bg-[#041015] border border-[#3D4A3E] rounded-md px-3 py-2 text-[#D7E5EC] outline-none focus:border-[#54E98A]"
-                            />
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="flex flex-col gap-1 col-span-2">
+                                <label className="text-xs text-[#BBCBBB]">NOMBRE / RAZÓN SOCIAL (name)</label>
+                                <input
+                                    type="text"
+                                    required
+                                    autoFocus
+                                    placeholder="Ej: Distribuidora del Sur S.A."
+                                    value={newSupplier.name}
+                                    onChange={(e) => setNewSupplier({ ...newSupplier, name: e.target.value })}
+                                    className="bg-[#041015] border border-[#3D4A3E] rounded-md px-3 py-2 text-[#D7E5EC] outline-none focus:border-[#54E98A]"
+                                />
+                            </div>
+
+                            <div className="flex flex-col gap-1">
+                                <label className="text-xs text-[#BBCBBB]">DOCUMENTO / RUC (document)</label>
+                                <input
+                                    type="text"
+                                    required
+                                    placeholder="Ej: 80044556-7"
+                                    value={newSupplier.document}
+                                    onChange={(e) => setNewSupplier({ ...newSupplier, document: e.target.value })}
+                                    className="bg-[#041015] border border-[#3D4A3E] rounded-md px-3 py-2 text-[#D7E5EC] outline-none focus:border-[#54E98A]"
+                                />
+                            </div>
+
+                            <div className="flex flex-col gap-1">
+                                <label className="text-xs text-[#BBCBBB]">TIMBRADO (timbrado - Obligatorio)</label>
+                                <input
+                                    type="text"
+                                    required
+                                    placeholder="Ej: 12345678"
+                                    value={newSupplier.timbrado}
+                                    onChange={(e) => setNewSupplier({ ...newSupplier, timbrado: e.target.value })}
+                                    className="bg-[#041015] border border-[#3D4A3E] rounded-md px-3 py-2 text-[#D7E5EC] outline-none focus:border-[#54E98A]"
+                                />
+                            </div>
+
+                            <div className="flex flex-col gap-1">
+                                <label className="text-xs text-[#BBCBBB]">TELÉFONO (phone)</label>
+                                <input
+                                    type="text"
+                                    placeholder="Ej: 0981123456"
+                                    value={newSupplier.phone}
+                                    onChange={(e) => setNewSupplier({ ...newSupplier, phone: e.target.value })}
+                                    className="bg-[#041015] border border-[#3D4A3E] rounded-md px-3 py-2 text-[#D7E5EC] outline-none focus:border-[#54E98A]"
+                                />
+                            </div>
+
+                            <div className="flex flex-col gap-1">
+                                <label className="text-xs text-[#BBCBBB]">CORREO (email)</label>
+                                <input
+                                    type="email"
+                                    placeholder="Ej: info@proveedor.com"
+                                    value={newSupplier.email}
+                                    onChange={(e) => setNewSupplier({ ...newSupplier, email: e.target.value })}
+                                    className="bg-[#041015] border border-[#3D4A3E] rounded-md px-3 py-2 text-[#D7E5EC] outline-none focus:border-[#54E98A]"
+                                />
+                            </div>
+
+                            <div className="flex flex-col gap-1 col-span-2">
+                                <label className="text-xs text-[#BBCBBB]">DIRECCIÓN (address)</label>
+                                <input
+                                    type="text"
+                                    placeholder="Ej: Avda. España c/ Brasil"
+                                    value={newSupplier.address}
+                                    onChange={(e) => setNewSupplier({ ...newSupplier, address: e.target.value })}
+                                    className="bg-[#041015] border border-[#3D4A3E] rounded-md px-4 py-2 text-[#D7E5EC] outline-none focus:border-[#54E98A]"
+                                />
+                            </div>
                         </div>
-                        <div>
-                            <label className="block text-xs text-[#BBCBBB] mb-1">CI / RUC</label>
-                            <input
-                                type="text"
-                                placeholder="Ej: 80044556-7"
-                                value={newSupplier.ruc}
-                                onChange={(e) => setNewSupplier({ ...newSupplier, ruc: e.target.value })}
-                                className="w-full bg-[#041015] border border-[#3D4A3E] rounded-md px-3 py-2 text-[#D7E5EC] outline-none focus:border-[#54E98A]"
-                            />
-                        </div>
+
                         <div className="flex justify-end gap-3 mt-6">
-                            <button
-                                type="button"
-                                onClick={() => setIsCreating(false)}
+                            <button 
+                                type="button" 
+                                onClick={() => setIsCreating(false)} 
                                 className="px-4 py-2 border border-[#3D4A3E] rounded-md text-[#BBCBBB]"
                             >
                                 Volver
                             </button>
-                            <button
-                                type="submit"
-                                className="px-4 py-2 bg-[#54E98A] text-[#003919] font-semibold rounded-md hover:bg-[#43cd77]"
+                            <button 
+                                type="submit" 
+                                disabled={loading}
+                                className="px-4 py-2 bg-[#54E98A] text-[#003919] font-semibold rounded-md hover:bg-[#43cd77] disabled:opacity-50"
                             >
-                                Guardar y Seleccionar
+                                {loading ? "Guardando..." : "Guardar y Seleccionar"}
                             </button>
                         </div>
                     </form>

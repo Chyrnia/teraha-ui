@@ -1,199 +1,19 @@
 // src/components/purchases/PurchaseForm.jsx
 "use client";
 import { useState, useEffect } from "react";
-import { Trash2, Plus, Barcode, Search, ArrowRight, X } from "lucide-react";
+import { Trash2, Plus, Barcode, Search, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import ProductSearchModal from "./ProductSearchModal";
-import SupplierSearchModal from "./SupplierSearchModal"; // <- Importamos el modal de proveedores
-
-function QuickProductModal({ isOpen, onClose, onProductCreated }) {
-    const [form, setForm] = useState({
-        code: "",
-        category: "",
-        description: "",
-        price: "",
-        cost: "",
-        stock: "",
-        margin: ""
-    });
-
-    const [error, setError] = useState("");
-
-    if (!isOpen) return null;
-
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setForm(current => ({
-            ...current,
-            [name]: value
-        }));
-    };
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        setError("");
-
-        const price = Number(form.price);
-        const cost = Number(form.cost);
-
-        // Validación Frontend: El precio de venta debe ser mayor o igual al costo
-        if (price < cost) {
-            setError("El precio de venta no puede ser menor al costo del producto.");
-            return;
-        }
-
-        const newProd = {
-            id: Date.now(),
-            code: form.code.toUpperCase(),
-            category: form.category,
-            description: form.description,
-            price: price,
-            cost: cost,
-            stock: Number(form.stock || 0),
-            margin: Number(form.margin || 0)
-        };
-
-        onProductCreated(newProd);
-        setForm({ code: "", category: "", description: "", price: "", cost: "", stock: "", margin: "" });
-        onClose();
-    };
-
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-            <div className="w-full max-w-2xl bg-[#142126] border border-[#3D4A3E] rounded-xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
-                <div className="flex justify-between items-center mb-4">
-                    <div>
-                        <h3 className="text-lg font-bold text-[#D7E5EC]">Agregar Producto Express</h3>
-                        <p className="text-xs text-[#BBCBBB]">Completa los datos del nuevo producto.</p>
-                    </div>
-                    <button onClick={onClose} className="text-[#BBCBBB] hover:text-white"><X size={20} /></button>
-                </div>
-
-                {error && (
-                    <div className="mb-4 p-3 bg-red-500/10 border border-red-500 rounded-md text-red-400 text-xs">
-                        {error}
-                    </div>
-                )}
-
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="flex flex-col gap-1">
-                            <label className="text-xs text-[#BBCBBB]">CÓDIGO</label>
-                            <input
-                                id="code"
-                                name="code"
-                                type="text"
-                                required
-                                value={form.code}
-                                onChange={handleChange}
-                                className="bg-[#041015] border border-[#3D4A3E] rounded-md px-4 py-2 text-[#D7E5EC] outline-none focus:border-[#54E98A]"
-                            />
-                        </div>
-
-                        <div className="flex flex-col gap-1">
-                            <label className="text-xs text-[#BBCBBB]">CATEGORÍA</label>
-                            <input
-                                id="category"
-                                name="category"
-                                type="text"
-                                required
-                                value={form.category}
-                                onChange={handleChange}
-                                className="bg-[#041015] border border-[#3D4A3E] rounded-md px-4 py-2 text-[#D7E5EC] outline-none focus:border-[#54E98A]"
-                            />
-                        </div>
-
-                        <div className="col-span-2 flex flex-col gap-1">
-                            <label className="text-xs text-[#BBCBBB]">DESCRIPCIÓN</label>
-                            <input
-                                id="description"
-                                name="description"
-                                type="text"
-                                required
-                                value={form.description}
-                                onChange={handleChange}
-                                className="bg-[#041015] border border-[#3D4A3E] rounded-md px-4 py-2 text-[#D7E5EC] outline-none focus:border-[#54E98A]"
-                            />
-                        </div>
-
-                        <div className="flex flex-col gap-1">
-                            <label className="text-xs text-[#BBCBBB]">PRECIO</label>
-                            <input
-                                id="price"
-                                name="price"
-                                type="number"
-                                required
-                                value={form.price}
-                                onChange={handleChange}
-                                className="bg-[#041015] border border-[#3D4A3E] rounded-md px-4 py-2 text-[#D7E5EC] outline-none focus:border-[#54E98A]"
-                            />
-                        </div>
-
-                        <div className="flex flex-col gap-1">
-                            <label className="text-xs text-[#BBCBBB]">COSTO</label>
-                            <input
-                                id="cost"
-                                name="cost"
-                                type="number"
-                                required
-                                value={form.cost}
-                                onChange={handleChange}
-                                className="bg-[#041015] border border-[#3D4A3E] rounded-md px-4 py-2 text-[#D7E5EC] outline-none focus:border-[#54E98A]"
-                            />
-                        </div>
-
-                        <div className="flex flex-col gap-1">
-                            <label className="text-xs text-[#BBCBBB]">STOCK</label>
-                            <input
-                                id="stock"
-                                name="stock"
-                                type="number"
-                                required
-                                value={form.stock}
-                                onChange={handleChange}
-                                className="bg-[#041015] border border-[#3D4A3E] rounded-md px-4 py-2 text-[#D7E5EC] outline-none focus:border-[#54E98A]"
-                            />
-                        </div>
-
-                        <div className="flex flex-col gap-1">
-                            <label className="text-xs text-[#BBCBBB]">MARGEN (%)</label>
-                            <input
-                                id="margin"
-                                name="margin"
-                                type="number"
-                                required
-                                value={form.margin}
-                                onChange={handleChange}
-                                className="bg-[#041015] border border-[#3D4A3E] rounded-md px-4 py-2 text-[#D7E5EC] outline-none focus:border-[#54E98A]"
-                            />
-                        </div>
-                    </div>
-
-                    <div className="mt-6 flex justify-end gap-3">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="px-4 py-2 rounded-md border border-[#3D4A3E] text-[#BBCBBB]"
-                        >
-                            Cancelar
-                        </button>
-                        <button
-                            type="submit"
-                            className="px-4 py-2 rounded-md bg-[#54E98A] text-[#003919] font-semibold"
-                        >
-                            Crear Producto
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    );
-}
+import QuickProductModal from "./QuickProductModal.jsx";
+import SupplierSearchModal from "./SupplierSearchModal";
+import { getProducts } from "@/lib/products";
+import { createPurchaseInvoice } from "@/lib/purchasesApi";
 
 export default function PurchaseForm() {
     const router = useRouter();
-
+    
     const [header, setHeader] = useState({
+        supplierId: null, // Guardamos el ID real para el objeto thirdParty
         supplier: "",
         ruc: "",
         seller: "Retail Manager",
@@ -204,11 +24,11 @@ export default function PurchaseForm() {
 
     const [items, setItems] = useState([]);
     const [skuInput, setSkuInput] = useState("");
+    const [loading, setLoading] = useState(false);
 
-    // Control de Modales
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [isQuickCreateOpen, setIsQuickCreateOpen] = useState(false);
-    const [isSupplierModalOpen, setIsSupplierModalOpen] = useState(false); // <- Estado modal proveedor
+    const [isSupplierModalOpen, setIsSupplierModalOpen] = useState(false);
 
     useEffect(() => {
         const handleBeforeUnload = (e) => {
@@ -273,6 +93,7 @@ export default function PurchaseForm() {
         }
         setItems([]);
         setHeader({
+            supplierId: null,
             supplier: "",
             ruc: "",
             seller: "Retail Manager",
@@ -280,6 +101,66 @@ export default function PurchaseForm() {
             invoiceNumber: "",
             paymentCondition: "Contado"
         });
+    };
+
+    // Función para registrar la compra conectada al API Gateway / Backend
+    const handleCompletePurchase = async () => {
+        if (items.length === 0) {
+            alert("Debe agregar al menos un producto a la compra.");
+            return;
+        }
+
+        if (!header.supplierId || !header.invoiceNumber) {
+            alert("Por favor seleccione un proveedor válido y complete el número de factura.");
+            return;
+        }
+
+        const confirmPurchase = window.confirm(
+            `¿Confirma el registro de la factura ${header.invoiceNumber} por un total de ₲ ${totalAmount.toLocaleString()}?`
+        );
+
+        if (!confirmPurchase) return;
+
+        setLoading(true);
+
+        // Estructura adaptada al PurchaseInvoiceDTO del backend
+        const purchasePayload = {
+            invoiceNumber: header.invoiceNumber,
+            transactionDate: new Date().toISOString(),
+            paymentCondition: header.paymentCondition,
+            thirdParty: {
+                id: header.supplierId
+            },
+            details: items.map(item => ({
+                product: {
+                    id: item.id
+                },
+                quantity: item.quantity,
+                unitCost: item.cost
+            }))
+        };
+
+        try {
+            await createPurchaseInvoice(purchasePayload);
+            alert("¡Compra registrada correctamente en el sistema!");
+            
+            // Limpiamos todo tras el éxito
+            setItems([]);
+            setHeader({
+                supplierId: null,
+                supplier: "",
+                ruc: "",
+                seller: "Retail Manager",
+                date: new Date().toISOString().split('T')[0],
+                invoiceNumber: "",
+                paymentCondition: "Contado"
+            });
+        } catch (error) {
+            console.error("Error al registrar compra:", error);
+            alert(`Hubo un error al registrar la compra: ${error.message}`);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const totalAmount = items.reduce((sum, item) => sum + (item.cost * item.quantity), 0);
@@ -305,14 +186,14 @@ export default function PurchaseForm() {
                         <div className="flex gap-2">
                             <input
                                 type="text"
-                                placeholder="Buscar por nombre..."
+                                readOnly
+                                placeholder="Seleccione proveedor..."
                                 value={header.supplier}
-                                onChange={(e) => setHeader({ ...header, supplier: e.target.value })}
-                                className="w-full bg-[#041015] border border-[#3D4A3E] rounded-md px-4 py-2 text-[#D7E5EC] outline-none focus:border-[#54E98A]"
+                                className="w-full bg-[#041015] border border-[#3D4A3E] rounded-md px-4 py-2 text-[#D7E5EC] outline-none cursor-pointer"
+                                onClick={() => setIsSupplierModalOpen(true)}
                             />
-                            {/* Botón de lupa que abre el buscador de proveedores */}
-                            <button
-                                type="button"
+                            <button 
+                                type="button" 
                                 onClick={() => setIsSupplierModalOpen(true)}
                                 className="bg-[#54E98A] text-[#003919] p-2 rounded-md hover:bg-[#43cd77] transition-colors"
                                 title="Buscar o crear proveedor"
@@ -323,13 +204,13 @@ export default function PurchaseForm() {
                     </div>
 
                     <div>
-                        <label className="block text-xs font-semibold text-[#BBCBBB] mb-2">CI / RUC</label>
+                        <label className="block text-xs font-semibold text-[#BBCBBB] mb-2">RUC / DOCUMENTO</label>
                         <input
                             type="text"
-                            placeholder="Ingrese CI o RUC"
+                            readOnly
+                            placeholder="RUC del proveedor"
                             value={header.ruc}
-                            onChange={(e) => setHeader({ ...header, ruc: e.target.value })}
-                            className="w-full bg-[#041015] border border-[#3D4A3E] rounded-md px-4 py-2 text-[#D7E5EC] outline-none focus:border-[#54E98A]"
+                            className="w-full bg-[#041015] border border-[#3D4A3E] rounded-md px-4 py-2 text-[#BBCBBB] outline-none"
                         />
                     </div>
 
@@ -359,7 +240,7 @@ export default function PurchaseForm() {
                         <label className="block text-xs font-semibold text-[#BBCBBB] mb-2">Nº FACTURA</label>
                         <input
                             type="text"
-                            placeholder="Autogenerado"
+                            placeholder="001-001-0000001"
                             value={header.invoiceNumber}
                             onChange={(e) => setHeader({ ...header, invoiceNumber: e.target.value })}
                             className="w-full bg-[#041015] border border-[#3D4A3E] rounded-md px-4 py-2 text-[#D7E5EC] outline-none focus:border-[#54E98A]"
@@ -398,114 +279,113 @@ export default function PurchaseForm() {
             <div className="bg-[#142126] border border-[#3D4A3E] rounded-xl overflow-hidden mb-6">
                 <table className="w-full text-left text-sm text-[#BBCBBB]">
                     <thead className="bg-[#101D22] border-b border-[#3D4A3E] text-xs uppercase">
-                    <tr>
-                        <th className="py-3 px-4 w-12 text-center">#</th>
-                        <th className="py-3 px-4 w-36">CÓDIGO</th>
-                        <th className="py-3 px-4">DETALLES DEL ARTÍCULO</th>
-                        <th className="py-3 px-4 w-36 text-right">COSTO</th>
-                        <th className="py-3 px-4 w-36 text-center">CANTIDAD</th>
-                        <th className="py-3 px-4 w-36 text-right">SUBTOTAL</th>
-                        <th className="py-3 px-4 w-16 text-center">ACCIÓN</th>
-                    </tr>
+                        <tr>
+                            <th className="py-3 px-4 w-12 text-center">#</th>
+                            <th className="py-3 px-4 w-36">CÓDIGO</th>
+                            <th className="py-3 px-4">DETALLES DEL ARTÍCULO</th>
+                            <th className="py-3 px-4 w-36 text-right">COSTO</th>
+                            <th className="py-3 px-4 w-36 text-center">CANTIDAD</th>
+                            <th className="py-3 px-4 w-36 text-right">SUBTOTAL</th>
+                            <th className="py-3 px-4 w-16 text-center">ACCIÓN</th>
+                        </tr>
                     </thead>
                     <tbody className="divide-y divide-[#3D4A3E]">
-                    {items.map((item, idx) => (
-                        <tr key={idx} className="hover:bg-[#18282e]">
-                            <td className="py-3 px-4 text-center">{idx + 1}</td>
-                            <td className="py-3 px-4 text-[#D7E5EC] font-mono">{item.code}</td>
-                            <td className="py-3 px-4 text-[#D7E5EC] font-medium">{item.description}</td>
-                            <td className="py-3 px-4 text-right">₲ {item.cost.toLocaleString()}</td>
+                        {items.map((item, idx) => (
+                            <tr key={idx} className="hover:bg-[#18282e]">
+                                <td className="py-3 px-4 text-center">{idx + 1}</td>
+                                <td className="py-3 px-4 text-[#D7E5EC] font-mono">{item.code}</td>
+                                <td className="py-3 px-4 text-[#D7E5EC] font-medium">{item.description}</td>
+                                <td className="py-3 px-4 text-right">₲ {item.cost.toLocaleString()}</td>
+                                <td className="py-3 px-4 text-center">
+                                    <div className="inline-flex items-center bg-[#041015] border border-[#3D4A3E] rounded-md">
+                                        <button onClick={() => updateQuantity(idx, -1)} className="px-2 py-1 text-[#54E98A] hover:bg-[#354C56]">-</button>
+                                        <span className="px-3 text-[#D7E5EC] font-bold">{item.quantity}</span>
+                                        <button onClick={() => updateQuantity(idx, 1)} className="px-2 py-1 text-[#54E98A] hover:bg-[#354C56]">+</button>
+                                    </div>
+                                </td>
+                                <td className="py-3 px-4 text-right text-[#54E98A] font-semibold">
+                                    ₲ {(item.cost * item.quantity).toLocaleString()}
+                                </td>
+                                <td className="py-3 px-4 text-center">
+                                    <button onClick={() => removeItem(idx)} className="text-[#BBCBBB] hover:text-red-400">
+                                        <Trash2 size={18} />
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+
+                        {/* FILA DINÁMICA DE ENTRADA (Búsqueda por SKU y Enter) */}
+                        <tr className="bg-[#0b171b]">
                             <td className="py-3 px-4 text-center">
-                                <div className="inline-flex items-center bg-[#041015] border border-[#3D4A3E] rounded-md">
-                                    <button onClick={() => updateQuantity(idx, -1)} className="px-2 py-1 text-[#54E98A] hover:bg-[#354C56]">-</button>
-                                    <span className="px-3 text-[#D7E5EC] font-bold">{item.quantity}</span>
-                                    <button onClick={() => updateQuantity(idx, 1)} className="px-2 py-1 text-[#54E98A] hover:bg-[#354C56]">+</button>
-                                </div>
-                            </td>
-                            <td className="py-3 px-4 text-right text-[#54E98A] font-semibold">
-                                ₲ {(item.cost * item.quantity).toLocaleString()}
-                            </td>
-                            <td className="py-3 px-4 text-center">
-                                <button onClick={() => removeItem(idx)} className="text-[#BBCBBB] hover:text-red-400">
-                                    <Trash2 size={18} />
+                                <button
+                                    type="button"
+                                    onClick={() => setIsSearchOpen(true)}
+                                    title="Buscar producto (F2)"
+                                    className="p-1.5 bg-[#54E98A] text-[#003919] rounded-full hover:scale-105 transition-transform"
+                                >
+                                    <Plus size={16} />
                                 </button>
                             </td>
-                        </tr>
-                    ))}
+                            <td colSpan={2} className="py-3 px-4">
+                                <div className="flex items-center bg-[#041015] border border-[#54E98A] rounded-lg px-3 py-1.5">
+                                    <Barcode className="text-[#54E98A] mr-2" size={20} />
+                                    <input
+                                        type="text"
+                                        placeholder="Escanear o ingresar SKU (Enter para agregar, F2 para buscar)..."
+                                        value={skuInput}
+                                        onChange={(e) => setSkuInput(e.target.value)}
+                                        onKeyDown={async (e) => {
+                                            if (e.key === "Enter" && skuInput.trim() !== "") {
+                                                const codeToSearch = skuInput.trim().toUpperCase();
+                                                const productsFound = await getProducts(codeToSearch);
+                                                const exactProduct = productsFound.find(p => p.code.toUpperCase() === codeToSearch);
 
-                    {/* FILA DINÁMICA DE ENTRADA */}
-                    <tr className="bg-[#0b171b]">
-                        <td className="py-3 px-4 text-center">
-                            <button
-                                type="button"
-                                onClick={() => setIsSearchOpen(true)}
-                                title="Buscar producto (F2)"
-                                className="p-1.5 bg-[#54E98A] text-[#003919] rounded-full hover:scale-105 transition-transform"
-                            >
-                                <Plus size={16} />
-                            </button>
-                        </td>
-                        <td colSpan={2} className="py-3 px-4">
-                            <div className="flex items-center bg-[#041015] border border-[#54E98A] rounded-lg px-3 py-1.5">
-                                <Barcode className="text-[#54E98A] mr-2" size={20} />
-                                <input
-                                    type="text"
-                                    placeholder="Escanear o ingresar SKU (Enter para agregar, F2 para buscar)..."
-                                    value={skuInput}
-                                    onChange={(e) => setSkuInput(e.target.value)}
-                                    onKeyDown={(e) => {
-                                        if (e.key === "Enter" && skuInput.trim() !== "") {
-                                            handleAddProduct({
-                                                id: Date.now(),
-                                                code: skuInput.toUpperCase(),
-                                                description: `Artículo ${skuInput.toUpperCase()}`,
-                                                cost: 150000
-                                            });
-                                        }
-                                    }}
-                                    className="w-full bg-transparent text-xs text-[#D7E5EC] outline-none placeholder:text-[#6B7280]"
-                                />
-                            </div>
-                        </td>
-                        <td className="py-3 px-4 text-center text-[#6B7280]">—</td>
-                        <td className="py-3 px-4 text-center text-[#6B7280]">—</td>
-                        <td className="py-3 px-4 text-center text-[#6B7280]">—</td>
-                        <td className="py-3 px-4"></td>
-                    </tr>
+                                                if (exactProduct) {
+                                                    handleAddProduct(exactProduct);
+                                                } else {
+                                                    const createNew = window.confirm(`El código "${codeToSearch}" no está registrado. ¿Deseas darlo de alta de forma express?`);
+                                                    if (createNew) {
+                                                        setIsQuickCreateOpen(true);
+                                                    }
+                                                }
+                                            }
+                                        }}
+                                        className="w-full bg-transparent text-xs text-[#D7E5EC] outline-none placeholder:text-[#6B7280]"
+                                    />
+                                </div>
+                            </td>
+                            <td className="py-3 px-4 text-center text-[#6B7280]">—</td>
+                            <td className="py-3 px-4 text-center text-[#6B7280]">—</td>
+                            <td className="py-3 px-4 text-center text-[#6B7280]">—</td>
+                            <td className="py-3 px-4"></td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
 
-            {/* BARRA INFERIOR DE TOTAL Y CONFIRMACIÓN */}
-            <div className="flex justify-between items-center bg-[#142126] border border-[#3D4A3E] rounded-xl p-6">
-                <button
-                    type="button"
-                    onClick={() => router.push("/dashboard/products")}
-                    className="px-4 py-2 text-xs border border-[#3D4A3E] rounded-md text-[#BBCBBB] hover:text-white"
-                >
-                    Revisar Stock
-                </button>
-
+            {/* BARRA INFERIOR */}
+            <div className="flex justify-end items-center bg-[#142126] border border-[#3D4A3E] rounded-xl p-6">
                 <div className="flex items-center gap-6">
                     <div className="text-right">
                         <span className="block text-xs uppercase text-[#BBCBBB]">TOTAL A PAGAR</span>
                         <span className="text-2xl font-bold text-[#54E98A]">
-							₲ {totalAmount.toLocaleString()}
-						</span>
+                            ₲ {totalAmount.toLocaleString()}
+                        </span>
                     </div>
 
                     <button
                         type="button"
-                        onClick={() => alert("¡Compra registrada correctamente!")}
-                        className="flex items-center gap-2 px-6 py-3 bg-[#54E98A] text-[#003919] font-bold rounded-xl hover:bg-[#43cd77] transition-all"
+                        disabled={loading}
+                        onClick={handleCompletePurchase}
+                        className="flex items-center gap-2 px-6 py-3 bg-[#54E98A] text-[#003919] font-bold rounded-xl hover:bg-[#43cd77] transition-all disabled:opacity-50"
                     >
-                        <span>Comprar</span>
+                        <span>{loading ? "Procesando..." : "Comprar"}</span>
                         <ArrowRight size={20} />
                     </button>
                 </div>
             </div>
 
-            {/* MODALES DE PRODUCTOS */}
+            {/* MODALES */}
             <ProductSearchModal
                 isOpen={isSearchOpen}
                 onClose={() => setIsSearchOpen(false)}
@@ -524,15 +404,15 @@ export default function PurchaseForm() {
                 }}
             />
 
-            {/* MODAL DE PROVEEDORES */}
             <SupplierSearchModal
                 isOpen={isSupplierModalOpen}
                 onClose={() => setIsSupplierModalOpen(false)}
                 onSelectSupplier={(supplier) => {
                     setHeader({
                         ...header,
+                        supplierId: supplier.id, // Guardamos el ID para el DTO
                         supplier: supplier.name,
-                        ruc: supplier.ruc
+                        ruc: supplier.document
                     });
                 }}
             />

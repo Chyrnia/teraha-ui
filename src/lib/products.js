@@ -90,3 +90,59 @@ export async function updateProduct(id, data){
 export async function deleteProduct(id){
 	products = products.filter(product => product.id !== id);
 }
+
+
+/*
+
+// src/lib/products.js
+const API_URL = "http://localhost:8080";
+
+export async function getProducts(search = "") {
+    try {
+        const url = search ? `${API_URL}/products?search=${encodeURIComponent(search)}` : `${API_URL}/products`;
+        const response = await fetch(url, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                // "Authorization": `Bearer ${localStorage.getItem("token")}`
+            }
+        });
+
+        if (!response.ok) throw new Error("Error al obtener los productos");
+        
+        const data = await response.json();
+        // Si el backend devuelve un objeto Page de Spring Data, los elementos vienen en 'content'
+        return data.content || data;
+    } catch (error) {
+        console.error("Error en getProducts:", error);
+        return [];
+    }
+}
+
+export async function createProduct(productData) {
+    const response = await fetch(`${API_URL}/products`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            // "Authorization": `Bearer ${localStorage.getItem("token")}`
+        },
+        body: JSON.stringify({
+            code: productData.code,
+            description: productData.description,
+            stock: Number(productData.stock || 0),
+            price: Number(productData.price),
+            cost: Number(productData.cost),
+            margin: Number(productData.margin || 0)
+        })
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Error al crear el producto en el backend");
+    }
+
+    return await response.json();
+}
+
+
+*/

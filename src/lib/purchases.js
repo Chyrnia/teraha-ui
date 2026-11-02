@@ -49,3 +49,27 @@ export async function getSupplierCategories() {
     // Categorías o proveedores de ejemplo para filtros
     return ["Distribuidora Mayorista S.A.", "Importadora del Este"];
 }
+
+/*
+// src/lib/purchases.js
+const API_URL = "http://localhost:8080";
+
+export async function createPurchaseInvoice(purchaseData) {
+    const response = await fetch(`${API_URL}/purchases`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            // "Authorization": `Bearer ${localStorage.getItem("token")}`
+        },
+        body: JSON.stringify(purchaseData)
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Error al registrar la compra");
+    }
+
+    return await response.json();
+}
+
+*/
