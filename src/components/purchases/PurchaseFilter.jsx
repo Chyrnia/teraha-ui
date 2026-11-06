@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from 'react';
 import { Search } from 'lucide-react';
-import { getSupplierCategories } from "@/lib/purchases.js";
+import { getSuppliers } from "@/lib/suppliers.js";
 
 export default function PurchaseFilter({ search, setSearch, suppliers, addSupplier, removeSupplier }) {
     const [supplierList, setSupplierList] = useState([]);
@@ -9,8 +9,8 @@ export default function PurchaseFilter({ search, setSearch, suppliers, addSuppli
 
     useEffect(() => {
         async function fetchSuppliers() {
-            const response = await getSupplierCategories();
-            setSupplierList(response);
+            const response = await getSuppliers();
+            setSupplierList(response.content || []);
         }
         fetchSuppliers();
     }, []);
@@ -37,48 +37,6 @@ export default function PurchaseFilter({ search, setSearch, suppliers, addSuppli
                 </div>
             </div>
 
-            {/* Filtros por Proveedor */}
-            <div className="flex-1">
-				<span className="block text-[#BBCBBB] text-xs">
-					FILTROS
-				</span>
-                <div className="flex gap-4 items-center mt-1">
-                    <div>
-                        <select
-                            id="supplier-filter"
-                            value={selectedSupplier}
-                            onChange={(e) => {
-                                if (e.target.value !== "") {
-                                    addSupplier(e.target.value);
-                                    setSelectedSupplier("");
-                                }
-                            }}
-                            className="py-1 px-4 border border-[#3D4A3E] text-center text-semibold text-[#54E98A] rounded-md bg-[#041015]"
-                        >
-                            <option value="">Proveedor</option>
-                            {supplierList.map(s => (
-                                <option key={s} value={s}>{s}</option>
-                            ))}
-                        </select>
-                    </div>
-                    <div className="flex-1 flex flex-wrap gap-2">
-                        {suppliers.map(sup => (
-                            <div
-                                className="flex items-center gap-1 rounded-full bg-[#354C56] px-3 py-1"
-                                key={sup}
-                            >
-                                <button
-                                    aria-label={`Quitar filtro ${sup}`}
-                                    onClick={() => removeSupplier(sup)}
-                                    className="text-[#A4BCC7] text-xs"
-                                >
-                                    {sup} ✕
-                                </button>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
         </div>
     );
 }

@@ -18,8 +18,8 @@ export default function ProductSearchModal({ isOpen, onClose, onSelectProduct, o
             async function fetchProducts() {
                 setLoading(true);
                 try {
-                    const data = await getProducts(search);
-                    setProducts(data);
+                    const data = await getProducts({ search });
+                    setProducts(data.content || []);
                 } catch (err) {
                     console.error("Error al buscar productos:", err);
                     setError("No se pudieron cargar los productos desde el servidor.");
@@ -110,13 +110,6 @@ export default function ProductSearchModal({ isOpen, onClose, onSelectProduct, o
                     ) : (
                         <div className="text-center py-8">
                             <p className="text-[#BBCBBB] mb-3 text-sm">No se encontró ningún producto con &quot;{search}&quot;.</p>
-                            <button
-                                type="button"
-                                onClick={onCreateNewProduct}
-                                className="text-xs px-4 py-2 bg-[#354C56] text-[#54E98A] rounded-md border border-[#3D4A3E] hover:bg-[#3d5763] font-semibold"
-                            >
-                                + Dar de alta &quot;{search}&quot; de forma express
-                            </button>
                         </div>
                     )}
                 </div>

@@ -15,3 +15,25 @@ export async function getSuppliers() {
 
     return suppliers;
 }
+
+export async function createSupplier(supplierData) {
+    const options = {
+        method: "POST",
+        body: JSON.stringify({
+            name: supplierData.name,
+            document: supplierData.document,
+            timbrado: supplierData.timbrado,
+            address: supplierData.address,
+            email: supplierData.email,
+            phone: supplierData.phone
+        })
+    };
+
+    return await authenticatedFetch("/suppliers", options);
+}
+
+
+export async function getSupplierById(id) {
+    const path = `/suppliers/${id}`;
+    return await authenticatedFetch(path, {});
+}

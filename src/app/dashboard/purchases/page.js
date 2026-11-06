@@ -13,8 +13,8 @@ export default function PurchasesPage() {
 
     useEffect(() => {
         async function loadPurchases() {
-            const data = await getPurchases();
-            setPurchases(data);
+            const data = await getPurchases({});
+            setPurchases(data.content);
         }
         loadPurchases();
     }, []);
@@ -40,7 +40,6 @@ export default function PurchasesPage() {
             <div className="flex justify-between items-center">
                 <div>
                     <h1 className="text-2xl font-bold text-[#D7E5EC]">Compras</h1>
-                    <p className="text-sm text-[#BBCBBB]">Gestión de ingresos de mercadería y facturas de proveedores</p>
                 </div>
                 <Link
                     href="/dashboard/purchases/new"

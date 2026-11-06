@@ -7,7 +7,7 @@ import ProductSearchModal from "./ProductSearchModal";
 import QuickProductModal from "./QuickProductModal.jsx";
 import SupplierSearchModal from "./SupplierSearchModal";
 import { getProducts } from "@/lib/products";
-import { createPurchaseInvoice } from "@/lib/purchasesApi";
+import { createPurchaseInvoice } from "@/lib/purchases";
 
 export default function PurchaseForm() {
     const router = useRouter();
@@ -65,7 +65,7 @@ export default function PurchaseForm() {
                     id: product.id,
                     code: product.code,
                     description: product.description,
-                    cost: Number(product.cost || product.price || 0),
+                    cost: Number(product.cost || 0),
                     quantity: 1
                 }
             ]);
@@ -127,17 +127,13 @@ export default function PurchaseForm() {
         const purchasePayload = {
             invoiceNumber: header.invoiceNumber,
             transactionDate: new Date().toISOString(),
-            paymentCondition: header.paymentCondition,
-            thirdParty: {
-                id: header.supplierId
-            },
+            supplierId: Number(header.supplierId),
             details: items.map(item => ({
-                product: {
-                    id: item.id
-                },
+                productId: item.id,
                 quantity: item.quantity,
                 unitCost: item.cost
             }))
+            
         };
 
         try {
@@ -164,6 +160,23 @@ export default function PurchaseForm() {
     };
 
     const totalAmount = items.reduce((sum, item) => sum + (item.cost * item.quantity), 0);
+
+    const updateQuantityDirect = (index, value) => {
+        const newQty = parseInt(value, 10);
+        const updated = [...items];
+        // Si borran todo o ponen un número menor a 1, dejamos 1 temporalmente para no romper la UI, o permitimos escribir
+        updated[index].quantity = isNaN(newQty) ? "" : newQty;
+        setItems(updated);
+    };
+
+    // Y para cuando terminen de editar (al salir del input o blur), validamos que no quede vacío o en 0
+    const handleQuantityBlur = (index) => {
+        const updated = [...items];
+        if (!updated[index].quantity || updated[index].quantity < 1) {
+            updated[index].quantity = 1;
+            setItems(updated);
+        }
+    };
 
     return (
         <div className="w-full p-8">
@@ -247,31 +260,7 @@ export default function PurchaseForm() {
                         />
                     </div>
 
-                    <div>
-                        <label className="block text-xs font-semibold text-[#BBCBBB] mb-2">CONDICIÓN DE VENTA</label>
-                        <div className="flex gap-6 items-center mt-3 text-sm text-[#D7E5EC]">
-                            <label className="flex items-center gap-2 cursor-pointer">
-                                <input
-                                    type="radio"
-                                    name="condition"
-                                    checked={header.paymentCondition === "Contado"}
-                                    onChange={() => setHeader({ ...header, paymentCondition: "Contado" })}
-                                    className="accent-[#54E98A]"
-                                />
-                                <span>Contado</span>
-                            </label>
-                            <label className="flex items-center gap-2 cursor-pointer">
-                                <input
-                                    type="radio"
-                                    name="condition"
-                                    checked={header.paymentCondition === "Crédito"}
-                                    onChange={() => setHeader({ ...header, paymentCondition: "Crédito" })}
-                                    className="accent-[#54E98A]"
-                                />
-                                <span>Crédito</span>
-                            </label>
-                        </div>
-                    </div>
+                    
                 </div>
             </div>
 
@@ -295,19 +284,57 @@ export default function PurchaseForm() {
                                 <td className="py-3 px-4 text-center">{idx + 1}</td>
                                 <td className="py-3 px-4 text-[#D7E5EC] font-mono">{item.code}</td>
                                 <td className="py-3 px-4 text-[#D7E5EC] font-medium">{item.description}</td>
-                                <td className="py-3 px-4 text-right">₲ {item.cost.toLocaleString()}</td>
+                                
+                                {/* Costo editable para adaptarlo a la factura */}
+                                <td className="py-3 px-4 text-right">
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        value={item.cost}
+                                        onChange={(e) => {
+                                            const newCost = Number(e.target.value);
+                                            const updated = [...items];
+                                            updated[idx].cost = isNaN(newCost) ? 0 : newCost;
+                                            setItems(updated);
+                                        }}
+                                        className="w-32 bg-[#041015] border border-[#3D4A3E] rounded px-2 py-1 text-right text-[#54E98A] outline-none focus:border-[#54E98A] [-moz-appearance:_textfield] [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none"
+                                    />
+                                </td>
+
                                 <td className="py-3 px-4 text-center">
-                                    <div className="inline-flex items-center bg-[#041015] border border-[#3D4A3E] rounded-md">
-                                        <button onClick={() => updateQuantity(idx, -1)} className="px-2 py-1 text-[#54E98A] hover:bg-[#354C56]">-</button>
-                                        <span className="px-3 text-[#D7E5EC] font-bold">{item.quantity}</span>
-                                        <button onClick={() => updateQuantity(idx, 1)} className="px-2 py-1 text-[#54E98A] hover:bg-[#354C56]">+</button>
+                                    <div className="inline-flex items-center bg-[#041015] border border-[#3D4A3E] rounded-md px-1">
+                                        <button 
+                                            type="button" 
+                                            onClick={() => updateQuantity(idx, -1)} 
+                                            className="px-2 py-1 text-[#54E98A] hover:bg-[#354C56] rounded"
+                                        >
+                                            -
+                                        </button>
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            value={item.quantity}
+                                            onChange={(e) => updateQuantityDirect(idx, e.target.value)}
+                                            onBlur={() => handleQuantityBlur(idx)}
+                                            className="w-16 bg-transparent text-center text-[#D7E5EC] font-bold outline-none [-moz-appearance:_textfield] [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none"
+                                        />
+                                        <button 
+                                            type="button" 
+                                            onClick={() => updateQuantity(idx, 1)} 
+                                            className="px-2 py-1 text-[#54E98A] hover:bg-[#354C56] rounded"
+                                        >
+                                            +
+                                        </button>
                                     </div>
                                 </td>
+
                                 <td className="py-3 px-4 text-right text-[#54E98A] font-semibold">
                                     ₲ {(item.cost * item.quantity).toLocaleString()}
                                 </td>
+
                                 <td className="py-3 px-4 text-center">
-                                    <button onClick={() => removeItem(idx)} className="text-[#BBCBBB] hover:text-red-400">
+                                    <button type="button" onClick={() => removeItem(idx)} className="text-[#BBCBBB] hover:text-red-400">
                                         <Trash2 size={18} />
                                     </button>
                                 </td>

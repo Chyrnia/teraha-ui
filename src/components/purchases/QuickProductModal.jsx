@@ -1,199 +1,205 @@
 // src/components/purchases/QuickProductModal.jsx
 "use client";
+
 import { useState } from "react";
-import { X } from "lucide-react";
-import { createProduct } from "@/lib/products"; // <- Importamos nuestro servicio conectado al Gateway
+import { Boxes, CircleAlert, LoaderCircle, X } from "lucide-react";
+import { createProduct } from "@/lib/products.js";
+
+const INITIAL_PRODUCT = {
+    code: "",
+    description: "",
+    price: "",
+    margin: "",
+};
+
+const inputClass =
+    "w-full rounded-lg border border-[#354C56] bg-[#08151A] px-3.5 py-3 text-sm text-[#D7E5EC] outline-none transition placeholder:text-[#5F777D] focus:border-[#54E98A] focus:ring-2 focus:ring-[#54E98A]/10 disabled:opacity-60";
+
+const labelClass =
+    "mb-2 block text-xs font-semibold tracking-wide text-[#BBCBBB]";
 
 export default function QuickProductModal({ isOpen, onClose, onProductCreated }) {
-    const [form, setForm] = useState({
-        code: "",
-        description: "",
-        price: "",
-        cost: "",
-        margin: ""
-    });
-
-    const [error, setError] = useState("");
-    const [loading, setLoading] = useState(false);
-
     if (!isOpen) return null;
 
-    const handleCostChange = (val) => {
-        const cost = Number(val);
-        const margin = Number(form.margin);
-        let price = form.price;
+    const [product, setProduct] = useState(INITIAL_PRODUCT);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState("");
 
-        if (cost > 0 && margin > 0) {
-            price = Math.round(cost * (1 + margin / 100));
-        }
-        setForm(prev => ({ ...prev, cost: val, price }));
-    };
+    function handleChange(e) {
+        const { name, value } = e.target;
+        setProduct((current) => ({
+            ...current,
+            [name]: value,
+        }));
+    }
 
-    const handlePriceChange = (val) => {
-        const price = Number(val);
-        const cost = Number(form.cost);
-        let margin = form.margin;
-
-        if (cost > 0 && price >= cost) {
-            margin = Math.round(((price - cost) / cost) * 100);
-        }
-        setForm(prev => ({ ...prev, price: val, margin }));
-    };
-
-    const handleMarginChange = (val) => {
-        const margin = Number(val);
-        const cost = Number(form.cost);
-        let price = form.price;
-
-        if (cost > 0 && margin >= 0) {
-            price = Math.round(cost * (1 + margin / 100));
-        }
-        setForm(prev => ({ ...prev, margin: val, price }));
-    };
-
-    const handleSubmit = async (e) => {
+    async function handleSubmit(e) {
         e.preventDefault();
+        if (isSubmitting) return;
+
         setError("");
+        setIsSubmitting(true);
 
-        const price = Number(form.price);
-        const cost = Number(form.cost);
-
-        // 1. Validación de seguridad en el frontend (Precio menor a Costo)
-        if (price < cost) {
-            setError("El precio de venta no puede ser menor al costo del producto.");
-            return;
-        }
-
-        // 2. Mensaje de confirmación previo a guardar y enviar al backend
-        const confirmSave = window.confirm(
-            `¿Está seguro de que desea guardar el producto "${form.description.toUpperCase()}" (${form.code.toUpperCase()}) con Costo ₲${cost.toLocaleString()} y Precio ₲${price.toLocaleString()}?`
-        );
-
-        if (!confirmSave) return; // Si cancela, se mantiene en el modal
-
-        setLoading(true);
+        // Payload limpio adaptado al backend (sin stock, sin cost, sin active)
+        const payload = {
+            code: product.code,
+            description: product.description,
+            price: Number(product.price),
+            margin: Number(product.margin),
+            supplierIds: [],
+            categoryIds: []
+        };
 
         try {
-            // 3. Estructura que espera el ProductDTO de tu backend (vía Gateway)
-            const productPayload = {
-                code: form.code.toUpperCase(),
-                description: form.description,
-                stock: 0, // El stock inicial se alimenta al registrar la compra
-                price: price,
-                cost: cost,
-                margin: Number(form.margin || 0)
-            };
-
-            // Llamada al microservicio a través del servicio centralizado
-            const createdProduct = await createProduct(productPayload);
-
-            // 4. Notificamos al componente padre que ya se guardó y añadimos a la compra
-            onProductCreated(createdProduct);
-            setForm({ code: "", description: "", price: "", cost: "", margin: "" });
+            const newProduct = await createProduct(payload);
+            if (onProductCreated) {
+                onProductCreated(newProduct);
+            }
             onClose();
-
         } catch (err) {
-            setError(err.message || "Error al registrar el producto en el servidor.");
+            setError(
+                err instanceof Error
+                    ? err.message
+                    : "No se pudo crear el producto express."
+            );
         } finally {
-            setLoading(false);
+            setIsSubmitting(false);
         }
-    };
+    }
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-            <div className="w-full max-w-xl bg-[#142126] border border-[#3D4A3E] rounded-xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
-                <div className="flex justify-between items-center mb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+            <div className="w-full max-w-lg overflow-hidden rounded-2xl border border-[#3D4A3E] bg-[#142126] shadow-2xl">
+                <header className="flex items-center justify-between border-b border-[#3D4A3E] bg-[#101D22] px-6 py-4">
+                    <div className="flex items-center gap-3">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#54E98A]/10 text-[#54E98A]">
+                            <Boxes size={19} />
+                        </div>
+                        <h2 className="text-sm font-semibold text-white">
+                            Nuevo Producto Express
+                        </h2>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        disabled={isSubmitting}
+                        className="text-[#7F9699] transition hover:text-white"
+                    >
+                        <X size={18} />
+                    </button>
+                </header>
+
+                <form onSubmit={handleSubmit} className="p-6 space-y-4">
                     <div>
-                        <h3 className="text-lg font-bold text-[#D7E5EC]">Nuevo Producto Express</h3>
-                        <p className="text-xs text-[#BBCBBB]">Registro rápido para añadir a la compra.</p>
+                        <label htmlFor="code" className={labelClass}>
+                            CÓDIGO
+                        </label>
+                        <input
+                            id="code"
+                            name="code"
+                            type="text"
+                            value={product.code}
+                            onChange={handleChange}
+                            placeholder="Ej. PROD-001"
+                            required
+                            disabled={isSubmitting}
+                            className={inputClass}
+                        />
                     </div>
-                    <button onClick={onClose} className="text-[#BBCBBB] hover:text-white"><X size={20} /></button>
-                </div>
 
-                {error && (
-                    <div className="mb-4 p-3 bg-red-500/10 border border-red-500 rounded-md text-red-400 text-xs">
-                        {error}
+                    <div>
+                        <label htmlFor="description" className={labelClass}>
+                            DESCRIPCIÓN
+                        </label>
+                        <input
+                            id="description"
+                            name="description"
+                            type="text"
+                            value={product.description}
+                            onChange={handleChange}
+                            placeholder="Nombre del producto"
+                            required
+                            disabled={isSubmitting}
+                            className={inputClass}
+                        />
                     </div>
-                )}
 
-                <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="flex flex-col gap-1">
-                            <label className="text-xs text-[#BBCBBB]">CÓDIGO / SKU</label>
+                        <div>
+                            <label htmlFor="price" className={labelClass}>
+                                PRECIO
+                            </label>
                             <input
-                                type="text"
-                                required
-                                placeholder="Ej: JMK-109"
-                                value={form.code}
-                                onChange={(e) => setForm({ ...form, code: e.target.value })}
-                                className="bg-[#041015] border border-[#3D4A3E] rounded-md px-4 py-2 text-[#D7E5EC] outline-none focus:border-[#54E98A]"
-                            />
-                        </div>
-
-                        <div className="flex flex-col gap-1">
-                            <label className="text-xs text-[#BBCBBB]">COSTO (₲)</label>
-                            <input
+                                id="price"
+                                name="price"
                                 type="number"
+                                min="0"
+                                step="0.01"
+                                value={product.price}
+                                onChange={handleChange}
+                                placeholder="0.00"
                                 required
-                                placeholder="0"
-                                value={form.cost}
-                                onChange={(e) => handleCostChange(e.target.value)}
-                                className="bg-[#041015] border border-[#3D4A3E] rounded-md px-4 py-2 text-[#D7E5EC] outline-none focus:border-[#54E98A]"
+                                disabled={isSubmitting}
+                                className={inputClass}
                             />
                         </div>
 
-                        <div className="col-span-2 flex flex-col gap-1">
-                            <label className="text-xs text-[#BBCBBB]">DESCRIPCIÓN</label>
+                        <div>
+                            <label htmlFor="margin" className={labelClass}>
+                                MARGEN (%)
+                            </label>
                             <input
-                                type="text"
-                                required
-                                placeholder="Nombre del artículo"
-                                value={form.description}
-                                onChange={(e) => setForm({ ...form, description: e.target.value })}
-                                className="bg-[#041015] border border-[#3D4A3E] rounded-md px-4 py-2 text-[#D7E5EC] outline-none focus:border-[#54E98A]"
-                            />
-                        </div>
-
-                        <div className="flex flex-col gap-1">
-                            <label className="text-xs text-[#BBCBBB]">MARGEN (%)</label>
-                            <input
+                                id="margin"
+                                name="margin"
                                 type="number"
-                                placeholder="Ej: 30"
-                                value={form.margin}
-                                onChange={(e) => handleMarginChange(e.target.value)}
-                                className="bg-[#041015] border border-[#3D4A3E] rounded-md px-4 py-2 text-[#D7E5EC] outline-none focus:border-[#54E98A]"
-                            />
-                        </div>
-
-                        <div className="flex flex-col gap-1">
-                            <label className="text-xs text-[#BBCBBB]">PRECIO VENTA (₲)</label>
-                            <input
-                                type="number"
+                                min="0"
+                                max="100"
+                                step="0.01"
+                                value={product.margin}
+                                onChange={handleChange}
+                                placeholder="0.00"
                                 required
-                                placeholder="0"
-                                value={form.price}
-                                onChange={(e) => handlePriceChange(e.target.value)}
-                                className="bg-[#041015] border border-[#3D4A3E] rounded-md px-4 py-2 text-[#D7E5EC] outline-none focus:border-[#54E98A]"
+                                disabled={isSubmitting}
+                                className={inputClass}
                             />
                         </div>
                     </div>
 
-                    <div className="mt-6 flex justify-end gap-3">
+                    {error && (
+                        <div
+                            role="alert"
+                            className="flex items-start gap-2 rounded-lg border border-red-400/20 bg-red-400/[0.07] p-3 text-xs text-red-200"
+                        >
+                            <CircleAlert size={16} className="mt-0.5 shrink-0" />
+                            {error}
+                        </div>
+                    )}
+
+                    <footer className="flex items-center justify-end gap-3 pt-4 border-t border-[#3D4A3E]">
                         <button
                             type="button"
                             onClick={onClose}
-                            className="px-4 py-2 rounded-md border border-[#3D4A3E] text-[#BBCBBB]"
+                            disabled={isSubmitting}
+                            className="rounded-lg border border-[#3D4A3E] px-4 py-2 text-xs font-medium text-[#BBCBBB] transition hover:border-[#718A8F] hover:text-white"
                         >
                             Cancelar
                         </button>
+
                         <button
                             type="submit"
-                            disabled={loading}
-                            className="px-4 py-2 rounded-md bg-[#54E98A] text-[#003919] font-semibold hover:bg-[#43cd77] disabled:opacity-50"
+                            disabled={isSubmitting}
+                            className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#54E98A] px-4 py-2 text-xs font-semibold text-[#003919] transition hover:bg-[#70F0A0] disabled:opacity-50"
                         >
-                            {loading ? "Guardando..." : "Guardar y Agregar"}
+                            {isSubmitting ? (
+                                <>
+                                    <LoaderCircle size={15} className="animate-spin" />
+                                    Guardando...
+                                </>
+                            ) : (
+                                "Crear producto"
+                            )}
                         </button>
-                    </div>
+                    </footer>
                 </form>
             </div>
         </div>
