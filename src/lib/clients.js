@@ -41,3 +41,33 @@ export async function createClient(clientData) {
 
     return await authenticatedFetch("/clients", options);
 }
+
+export async function updateClient(id, data){
+    const {
+        name,
+        document,
+        address,
+        email,
+        phone,
+        birthDate
+    } = data;
+    
+    const payload = {
+        name,
+        document,
+        address,
+        email,
+        phone,
+        birthDate
+    };
+
+    const path = `/clients/${id}`;
+    const options = {
+        method: "PUT",
+        body: JSON.stringify(payload)
+    };
+
+    const updatedClient = await authenticatedFetch(path, options);
+
+    return updatedClient;
+}
