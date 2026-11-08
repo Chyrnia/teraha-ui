@@ -264,15 +264,6 @@ export default function PurchaseDetailPage({ params }) {
                         />
                     </div>
 
-                    <div>
-                        <label className="block text-xs font-semibold text-[#BBCBBB] mb-2 print:text-black print:font-bold">CONDICIÓN DE VENTA</label>
-                        <input
-                            type="text"
-                            readOnly
-                            value={purchase?.paymentCondition || "Contado"}
-                            className="w-full bg-[#041015] border border-[#3D4A3E] rounded-md px-4 py-2 text-[#D7E5EC] outline-none print:bg-transparent print:border-0 print:border-b print:border-black print:rounded-none print:px-0 print:py-1 print:text-black print:font-medium"
-                        />
-                    </div>
                 </div>
 
                 <div className="bg-[#142126] border border-[#3D4A3E] rounded-xl overflow-hidden mb-6 print:bg-white print:border print:border-black print:rounded-none">

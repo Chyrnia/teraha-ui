@@ -107,8 +107,7 @@ export default function SaleForm() {
         setLoading(true);
 
         const salePayload = {
-            invoiceNumber: header.invoiceNumber,
-            transactionDate: new Date().toISOString(),
+            transactionDate: new Date().toISOString(), // Enviado en formato ISO requerido por el backend
             clientId: Number(header.clientId),
             details: items.map(item => ({
                 productId: Number(item.id),

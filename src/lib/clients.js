@@ -20,3 +20,24 @@ export async function getClients(filters = {}) {
     // Spring Data Page suele devolver { content: [...], totalPages: ... } o un array directo
     return json;
 }
+
+export async function getClientById(id) {
+    const path = `/clients/${id}`;
+    return await authenticatedFetch(path, {});
+}
+
+export async function createClient(clientData) {
+    const options = {
+        method: "POST",
+        body: JSON.stringify({
+            name: clientData.name,
+            document: clientData.document,
+            address: clientData.address,
+            email: clientData.email,
+            phone: clientData.phone,
+            birthDate: clientData.birthDate
+        })
+    };
+
+    return await authenticatedFetch("/clients", options);
+}
