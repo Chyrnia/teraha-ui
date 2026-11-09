@@ -37,29 +37,21 @@ export async function createUser(userData) {
 }
 
 export async function updateUser(id, userData) {
-    // 1. Actualizamos datos básicos (username, email, password si existe)
-    const basePayload = {
+    const payload = {
         username: userData.username,
         email: userData.email,
+        roles: userData.roles
     };
 
+    // Solo enviamos la contraseña si el usuario escribió una nueva
     if (userData.password && userData.password.trim() !== "") {
-        basePayload.password = userData.password;
+        payload.password = userData.password;
     }
 
-    // Nota: Si tu backend tiene un PUT /users/{id} para esto:
-    await authenticatedFetch(`/users/${id}`, {
+    const options = {
         method: "PUT",
-        body: JSON.stringify(basePayload)
-    });
+        body: JSON.stringify(payload)
+    };
 
-    // 2. Si el backend maneja los roles por separado en /users/{id}/roles
-    if (userData.roles && userData.roles.length > 0) {
-        await authenticatedFetch(`/users/${id}/roles`, {
-            method: "PUT",
-            body: JSON.stringify(userData.roles) // Envía directamente la lista ['SYSADMIN', 'SELLER']
-        });
-    }
-
-    return { id, ...userData };
+    return await authenticatedFetch(`/users/${id}`, options);
 }
