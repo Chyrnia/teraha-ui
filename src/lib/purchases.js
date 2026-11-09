@@ -15,23 +15,22 @@ export async function createPurchaseInvoice(purchaseData) {
     return response;
 }
 
-export async function getPurchases(filters) {
-        const { search = "", page = 0 } = filters;
-    
-        const params = new URLSearchParams({
-            page: String(page)
-        });
-    
-        if(search.trim()){
-            params.set("search", search.trim());
-        }
-    
-        const path = `/purchases?${params}`;
-    
-        const json = await authenticatedFetch(path, {});
-        
-        return json;
+export async function getPurchases(filters = {}, options = {}) {
+    const { search = "", page = 0 } = filters;
 
+    const params = new URLSearchParams({
+        page: String(page)
+    });
+
+    if (search.trim()) {
+        params.set("search", search.trim());
+    }
+
+    const path = `/purchases?${params}`;
+
+    const json = await authenticatedFetch(path, options);
+    
+    return json;
 }
 
 export async function getPurchaseById(id) {

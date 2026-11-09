@@ -53,9 +53,9 @@ export default function ClientsPage(){
                 <h1 className="text-2xl font-bold text-[#D7E5EC]">Lista de Clientes</h1>
                 <Link
                     href='/dashboard/clients/new'
-                    className="flex items-center gap-2 px-4 py-2 rounded-md bg-[#54E98A] text-[#003919] font-bold text-xs"
+                    className="flex items-center gap-2 px-4 py-2 bg-[#54E98A] rounded-md text-[#003919] font-semibold hover:opacity-90 transition-all"
                 >
-                    <Plus size={16} />
+                    <Plus size={18} />
                     Agregar Cliente
                 </Link>
             </div>

@@ -2,13 +2,12 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Eye, Search, Plus, ChevronLeft, ChevronRight } from "lucide-react";
+import { Eye, ChevronLeft, ChevronRight } from "lucide-react";
 import { getPurchases } from "@/lib/purchases";
 import { getSupplierById } from "@/lib/suppliers.js";
 
-export default function PurchaseList() {
+export default function PurchaseList({ search }) {
     const [purchases, setPurchases] = useState([]);
-    const [search, setSearch] = useState("");
     const [page, setPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
     const [loading, setLoading] = useState(true);
@@ -16,37 +15,45 @@ export default function PurchaseList() {
     const [supplierMap, setSupplierMap] = useState({});
 
     useEffect(() => {
+        const controller = new AbortController();
+
         async function loadPurchases() {
             setLoading(true);
             setError("");
             try {
-                // Pasamos tanto el término de búsqueda como el número de página actual
-                const data = await getPurchases({ search, page });
+                const data = await getPurchases({ search, page }, { signal: controller.signal });
                 const pList = data.content || [];
                 setPurchases(pList);
                 setTotalPages(data.totalPages || 0);
 
-                // Cargar nombres de proveedores únicos para esta página
                 const supplierIds = [...new Set(pList.map(p => p.supplierId || p.thirdParty?.id))].filter(Boolean);
                 
                 const newSupplierMap = { ...supplierMap };
                 for (const id of supplierIds) {
-                    if (!newSupplierMap[id]) {
+                    if (!newSupplierMap[id] && !controller.signal.aborted) {
                         try {
-                            const supData = await getSupplierById(id);
+                            const supData = await getSupplierById(id, { signal: controller.signal });
                             newSupplierMap[id] = supData.name;
                         } catch (e) {
-                            newSupplierMap[id] = "Proveedor desconocido";
+                            if (e.name !== "AbortError") {
+                                newSupplierMap[id] = "Proveedor desconocido";
+                            }
                         }
                     }
                 }
-                setSupplierMap(newSupplierMap);
+                if (!controller.signal.aborted) {
+                    setSupplierMap(newSupplierMap);
+                }
 
             } catch (err) {
-                console.error("Error al cargar las compras:", err);
-                setError(err.message || "Error al conectar con el servidor.");
+                if (err.name !== "AbortError") {
+                    console.error("Error al cargar las compras:", err);
+                    setError(err.message || "Error al conectar con el servidor.");
+                }
             } finally {
-                setLoading(false);
+                if (!controller.signal.aborted) {
+                    setLoading(false);
+                }
             }
         }
 
@@ -54,23 +61,24 @@ export default function PurchaseList() {
             loadPurchases();
         }, 300);
 
-        return () => clearTimeout(timer);
+        return () => {
+            clearTimeout(timer);
+            controller.abort();
+        };
     }, [search, page]);
 
-    // Cada vez que el usuario escriba en el buscador, regresamos a la página 0
     useEffect(() => {
         setPage(0);
     }, [search]);
 
     return (
-        <div className="w-full">
+        <div className="w-full mt-6">
             {error && (
                 <div className="mb-4 p-3 bg-red-500/10 border border-red-500 rounded-md text-red-400 text-xs">
                     {error}
                 </div>
             )}
 
-            {/* Tabla de Listado */}
             <div className="bg-[#142126] border border-[#3D4A3E] rounded-xl overflow-hidden mb-4">
                 <table className="w-full border-separate border-spacing-0">
                     <colgroup>
@@ -92,7 +100,7 @@ export default function PurchaseList() {
                     <tbody className="text-[#BBCBBB] [&_td]:py-3 [&_td]:px-4 divide-y divide-[#3D4A3E]">
                         {loading ? (
                             <tr>
-                                <td colSpan="5" className="text-center py-8 text-sm">Cargando compras desde el servidor...</td>
+                                <td colSpan="5" className="text-center py-8 text-sm">Cargando compras...</td>
                             </tr>
                         ) : purchases.length > 0 ? (
                             purchases.map((p) => {
@@ -127,7 +135,7 @@ export default function PurchaseList() {
                 </table>
             </div>
 
-            {/* Controles de Paginación */}
+            {/* Paginación */}
             <div className="flex justify-between items-center bg-[#142126] border border-[#3D4A3E] rounded-xl px-6 py-4">
                 <button
                     type="button"

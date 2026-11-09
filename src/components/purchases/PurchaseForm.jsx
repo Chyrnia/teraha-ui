@@ -364,8 +364,12 @@ export default function PurchaseForm() {
                                         onKeyDown={async (e) => {
                                             if (e.key === "Enter" && skuInput.trim() !== "") {
                                                 const codeToSearch = skuInput.trim().toUpperCase();
-                                                const productsFound = await getProducts(codeToSearch);
-                                                const exactProduct = productsFound.find(p => p.code.toUpperCase() === codeToSearch);
+                                                const response = await getProducts(codeToSearch);
+                                                
+                                                // Verificamos si response es un array o si viene paginado dentro de .content
+                                                const productsList = Array.isArray(response) ? response : (response?.content || []);
+                                                
+                                                const exactProduct = productsList.find(p => p.code.toUpperCase() === codeToSearch);
 
                                                 if (exactProduct) {
                                                     handleAddProduct(exactProduct);

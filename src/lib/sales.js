@@ -1,7 +1,7 @@
 // src/lib/sales.js
 import { authenticatedFetch } from "@/lib/auth.js";
 
-export async function getSales(filters = {}) {
+export async function getSales(filters = {}, options = {}) {
     const safeFilters = typeof filters === "string" ? { search: filters } : (filters || {});
     const { search = "", page = 0 } = safeFilters;
 
@@ -15,7 +15,7 @@ export async function getSales(filters = {}) {
     }
 
     const path = `/sales?${params}`;
-    const json = await authenticatedFetch(path, {});
+    const json = await authenticatedFetch(path, options);
     
     return json;
 }

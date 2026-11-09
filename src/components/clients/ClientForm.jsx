@@ -43,7 +43,6 @@ export default function ClientForm({
 
     function handleChange(e) {
         const { name, value } = e.target;
-
         setClient((current) => ({
             ...current,
             [name]: value,
@@ -52,7 +51,6 @@ export default function ClientForm({
 
     async function handleSubmit(e) {
         e.preventDefault();
-
         if (isSubmitting) return;
 
         setError("");
@@ -86,138 +84,128 @@ export default function ClientForm({
             onSubmit={handleSubmit}
             className="mt-6 overflow-hidden rounded-2xl border border-[#3D4A3E] bg-[#142126] shadow-xl shadow-black/10"
         >
-            <div className="grid grid-cols-1">
-                {/* Client information */}
-                <section className="p-6 sm:p-8">
-                    <div className="mb-7 flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#54E98A]/10 text-[#54E98A]">
-                            <User size={21} />
+            <section className="p-6 sm:p-8">
+                <div className="mb-7 flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#54E98A]/10 text-[#54E98A]">
+                        <User size={21} />
+                    </div>
+
+                    <div>
+                        <h2 className="text-base font-semibold text-white">
+                            Información del cliente
+                        </h2>
+                        <p className="mt-0.5 text-xs text-[#7F9699]">
+                            Datos personales y de contacto.
+                        </p>
+                    </div>
+                </div>
+
+                <div className="space-y-5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div>
+                            <label htmlFor="name" className={labelClass}>
+                                NOMBRE Y APELLIDO
+                            </label>
+                            <input
+                                id="name"
+                                name="name"
+                                type="text"
+                                value={client.name}
+                                onChange={handleChange}
+                                placeholder="Ej. Juan Pérez"
+                                required
+                                disabled={isSubmitting}
+                                className={inputClass}
+                            />
                         </div>
 
                         <div>
-                            <h2 className="text-base font-semibold text-white">
-                                Información del cliente
-                            </h2>
-                            <p className="mt-0.5 text-xs text-[#7F9699]">
-                                Datos personales y de contacto.
-                            </p>
+                            <label htmlFor="document" className={labelClass}>
+                                DOCUMENTO / RUC
+                            </label>
+                            <input
+                                id="document"
+                                name="document"
+                                type="text"
+                                value={client.document}
+                                onChange={handleChange}
+                                placeholder="Ej. 1234567-8"
+                                required
+                                disabled={isSubmitting}
+                                className={inputClass}
+                            />
                         </div>
                     </div>
 
-                    <div className="space-y-5">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                            <div>
-                                <label htmlFor="name" className={labelClass}>
-                                    NOMBRE Y APELLIDO
-                                </label>
-
-                                <input
-                                    id="name"
-                                    name="name"
-                                    type="text"
-                                    value={client.name}
-                                    onChange={handleChange}
-                                    placeholder="Ej. Juan Pérez"
-                                    required
-                                    disabled={isSubmitting}
-                                    className={inputClass}
-                                />
-                            </div>
-
-                            <div>
-                                <label htmlFor="document" className={labelClass}>
-                                    DOCUMENTO / RUC
-                                </label>
-
-                                <input
-                                    id="document"
-                                    name="document"
-                                    type="text"
-                                    value={client.document}
-                                    onChange={handleChange}
-                                    placeholder="Ej. 1234567-8"
-                                    required
-                                    disabled={isSubmitting}
-                                    className={inputClass}
-                                />
-                            </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div>
+                            <label htmlFor="phone" className={labelClass}>
+                                TELÉFONO
+                            </label>
+                            <input
+                                id="phone"
+                                name="phone"
+                                type="text"
+                                value={client.phone}
+                                onChange={handleChange}
+                                placeholder="Ej. +595981123456"
+                                disabled={isSubmitting}
+                                className={inputClass}
+                            />
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                            <div>
-                                <label htmlFor="phone" className={labelClass}>
-                                    TELÉFONO
-                                </label>
-
-                                <input
-                                    id="phone"
-                                    name="phone"
-                                    type="text"
-                                    value={client.phone}
-                                    onChange={handleChange}
-                                    placeholder="Ej. +595981123456"
-                                    disabled={isSubmitting}
-                                    className={inputClass}
-                                />
-                            </div>
-
-                            <div>
-                                <label htmlFor="email" className={labelClass}>
-                                    CORREO ELECTRÓNICO
-                                </label>
-
-                                <input
-                                    id="email"
-                                    name="email"
-                                    type="email"
-                                    value={client.email}
-                                    onChange={handleChange}
-                                    placeholder="Ej. juan.perez@email.com"
-                                    disabled={isSubmitting}
-                                    className={inputClass}
-                                />
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                            <div>
-                                <label htmlFor="birthDate" className={labelClass}>
-                                    FECHA DE NACIMIENTO
-                                </label>
-
-                                <input
-                                    id="birthDate"
-                                    name="birthDate"
-                                    type="date"
-                                    value={client.birthDate}
-                                    onChange={handleChange}
-                                    disabled={isSubmitting}
-                                    className={inputClass}
-                                />
-                            </div>
-
-                            <div>
-                                <label htmlFor="address" className={labelClass}>
-                                    DIRECCIÓN
-                                </label>
-
-                                <input
-                                    id="address"
-                                    name="address"
-                                    type="text"
-                                    value={client.address}
-                                    onChange={handleChange}
-                                    placeholder="Ej. Av. Principal 123"
-                                    disabled={isSubmitting}
-                                    className={inputClass}
-                                />
-                            </div>
+                        <div>
+                            <label htmlFor="email" className={labelClass}>
+                                CORREO ELECTRÓNICO
+                            </label>
+                            <input
+                                id="email"
+                                name="email"
+                                type="email"
+                                value={client.email}
+                                onChange={handleChange}
+                                placeholder="Ej. juan.perez@email.com"
+                                disabled={isSubmitting}
+                                className={inputClass}
+                            />
                         </div>
                     </div>
-                </section>
-            </div>
 
-            {/* Form error */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div>
+                            <label htmlFor="birthDate" className={labelClass}>
+                                FECHA DE NACIMIENTO
+                            </label>
+                            <input
+                                id="birthDate"
+                                name="birthDate"
+                                type="date"
+                                value={client.birthDate}
+                                onChange={handleChange}
+                                disabled={isSubmitting}
+                                className={inputClass}
+                            />
+                        </div>
+
+                        <div>
+                            <label htmlFor="address" className={labelClass}>
+                                DIRECCIÓN
+                            </label>
+                            <input
+                                id="address"
+                                name="address"
+                                type="text"
+                                value={client.address}
+                                onChange={handleChange}
+                                placeholder="Ej. Av. Principal 123"
+                                disabled={isSubmitting}
+                                className={inputClass}
+                            />
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             {error && (
                 <div
                     role="alert"
@@ -228,7 +216,6 @@ export default function ClientForm({
                 </div>
             )}
 
-            {/* Actions */}
             <footer className="flex flex-col-reverse gap-3 border-t border-[#3D4A3E] bg-[#101D22]/70 px-6 py-5 sm:flex-row sm:justify-end sm:px-8">
                 <button
                     type="button"

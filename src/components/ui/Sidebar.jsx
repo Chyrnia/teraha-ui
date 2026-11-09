@@ -1,5 +1,9 @@
+"use client";
+
+import { useState, useEffect } from 'react';
 import { Banknote, ShoppingCart, Summary, Package, BookUser, Settings, LogOut } from 'lucide-react';
 import SidebarItem from "@/components/ui/SidebarItem.jsx";
+import { hasRole } from "@/lib/auth.js";
 
 const ROUTES = {
 	products: "/dashboard/products",
@@ -7,11 +11,18 @@ const ROUTES = {
 	purchases: "/dashboard/purchases",
 	reports: "/dashboard/reports",
 	clients: "/dashboard/clients",
+	suppliers: "/dashboard/suppliers",
+	users: "/dashboard/users",
 	settings: "/dashboard/settings",
 	dashboard: "/dashboard",
 };
 
 export default function Sidebar(){
+	const [isSysadmin, setIsSysadmin] = useState(false);
+
+	useEffect(() => {
+    setIsSysadmin(hasRole("ROLE_SYSADMIN"));
+    }, []);
 
 	return(
 		<aside className="w-64 h-full bg-[#08151A] flex flex-col border-r border-r-[#101D22]">
@@ -33,6 +44,15 @@ export default function Sidebar(){
 					<SidebarItem href={ROUTES.clients} icon={ <BookUser size={28}/> }>
 						Clientes
 					</SidebarItem>
+					<SidebarItem href={ROUTES.suppliers} icon={ <BookUser size={28}/> }>
+						Proveedores
+					</SidebarItem>
+					{isSysadmin && (
+                        <SidebarItem href={ROUTES.users} icon={ <BookUser size={28}/> }>
+						Usuarios
+						</SidebarItem>
+                    )}
+
 				</ul>
 			</nav>
 
@@ -40,9 +60,6 @@ export default function Sidebar(){
 				<ul className="list-none p-0 m-0 px-4">
 					<SidebarItem href={ROUTES.settings} icon={ <Settings size={28}/> }>
 						Configuraciones
-					</SidebarItem>
-					<SidebarItem href={ROUTES.dashboard} icon={ <LogOut size={28}/> }>
-						Salir
 					</SidebarItem>
 				</ul>
 			</nav>

@@ -1,21 +1,22 @@
 import { authenticatedFetch } from "@/lib/auth.js";
 
-export async function getProducts(filters) {
-	const { search = "", page = 0 } = filters;
+export async function getProducts(filters, options = {}) {
+    const { search = "", page = 0 } = filters;
 
-	const params = new URLSearchParams({
-		page: String(page)
-	});
+    const params = new URLSearchParams({
+        page: String(page)
+    });
 
-	if(search.trim()){
-		params.set("search", search.trim());
-	}
+    if(search.trim()){
+        params.set("search", search.trim());
+    }
 
-	const path = `/products?${params}`;
+    const path = `/products?${params}`;
 
-	const json = await authenticatedFetch(path, {});
-	
-	return json;
+    // Pasamos el objeto options completo (que incluye la signal) a authenticatedFetch
+    const json = await authenticatedFetch(path, options);
+    
+    return json;
 }
 
 export async function getProductById(id){

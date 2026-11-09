@@ -58,27 +58,28 @@ export async function logout(){
 
 export async function authenticatedFetch(path, options = {}){
 
-	const token = getToken();
+    const token = getToken();
 
-	console.log("Token retrieved: " + Boolean(token));
+    console.log("Token retrieved: " + Boolean(token));
 
-	const headers = new Headers(options.headers);
-	headers.append("Content-Type", "application/json");
-	headers.append("Authorization", `Bearer ${token}`);
+    const headers = new Headers(options.headers);
+    headers.append("Content-Type", "application/json");
+    headers.append("Authorization", `Bearer ${token}`);
 
-	const response = await fetch(BASE_URL + path, {
-		...options,
-		headers
-	});
+    // Agregamos options al fetch nativo para que incluya la señal de aborto (signal)
+    const response = await fetch(BASE_URL + path, {
+        ...options,
+        headers
+    });
 
-	await throwIfNotOk(response);
+    await throwIfNotOk(response);
 
-	if(response.status === 204){
-		return null;
-	}
+    if(response.status === 204){
+        return null;
+    }
 
-	const json = await response.json();
-	return json;
+    const json = await response.json();
+    return json;
 }
 
 export function hasRole(role) {

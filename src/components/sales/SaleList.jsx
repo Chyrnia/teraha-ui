@@ -6,9 +6,8 @@ import { Eye, ChevronLeft, ChevronRight } from "lucide-react";
 import { getSales } from "@/lib/sales";
 import { getClientById } from "@/lib/clients";
 
-export default function SaleList() {
+export default function SaleList({ search }) {
     const [sales, setSales] = useState([]);
-    const [search, setSearch] = useState("");
     const [page, setPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
     const [loading, setLoading] = useState(true);
@@ -16,37 +15,45 @@ export default function SaleList() {
     const [clientMap, setClientMap] = useState({});
 
     useEffect(() => {
+        const controller = new AbortController();
+
         async function loadSales() {
             setLoading(true);
             setError("");
             try {
-                // Pasamos el término de búsqueda y el número de página actual
-                const data = await getSales({ search, page });
+                const data = await getSales({ search, page }, { signal: controller.signal });
                 const sList = data.content || [];
                 setSales(sList);
                 setTotalPages(data.totalPages || 0);
 
-                // Cargar nombres de clientes únicos para esta página (según SaleInvoiceDTO con clientId)
                 const clientIds = [...new Set(sList.map(s => s.clientId || s.client?.id))].filter(Boolean);
                 
                 const newClientMap = { ...clientMap };
                 for (const id of clientIds) {
-                    if (!newClientMap[id]) {
+                    if (!newClientMap[id] && !controller.signal.aborted) {
                         try {
-                            const clientData = await getClientById(id);
+                            const clientData = await getClientById(id, { signal: controller.signal });
                             newClientMap[id] = clientData.name;
                         } catch (e) {
-                            newClientMap[id] = "Cliente General";
+                            if (e.name !== "AbortError") {
+                                newClientMap[id] = "Cliente General";
+                            }
                         }
                     }
                 }
-                setClientMap(newClientMap);
+                if (!controller.signal.aborted) {
+                    setClientMap(newClientMap);
+                }
 
             } catch (err) {
-                console.error("Error al cargar las ventas:", err);
-                setError(err.message || "Error al conectar con el servidor.");
+                if (err.name !== "AbortError") {
+                    console.error("Error al cargar las ventas:", err);
+                    setError(err.message || "Error al conectar con el servidor.");
+                }
             } finally {
-                setLoading(false);
+                if (!controller.signal.aborted) {
+                    setLoading(false);
+                }
             }
         }
 
@@ -54,16 +61,18 @@ export default function SaleList() {
             loadSales();
         }, 300);
 
-        return () => clearTimeout(timer);
+        return () => {
+            clearTimeout(timer);
+            controller.abort();
+        };
     }, [search, page]);
 
-    // Cada vez que el usuario escriba en el buscador, regresamos a la página 0
     useEffect(() => {
         setPage(0);
     }, [search]);
 
     return (
-        <div className="w-full">
+        <div className="w-full mt-6">
             {error && (
                 <div className="mb-4 p-3 bg-red-500/10 border border-red-500 rounded-md text-red-400 text-xs">
                     {error}

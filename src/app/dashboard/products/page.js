@@ -23,21 +23,36 @@ export default function ProductsPage(){
 	};
 
 	useEffect(() => {
-		async function fetchProducts(){
-			setIsLoading(true);
-			try{
-			const response = await getProducts(filters);
-			setProducts(response.content);
-			setTotalPages(response.totalPages);
-			} catch (error) {
-				console.error("Failed to fetch products: " + error);
-			} finally {
-				setIsLoading(false);
-			}
-		}
-		fetchProducts();
-	},[search, page, refreshKey]);
+    const controller = new AbortController();
 
+    async function fetchProducts(){
+        setIsLoading(true);
+        try {
+            // Pasamos la señal de aborto a la función getProducts
+            const response = await getProducts(filters, { signal: controller.signal });
+            
+            setProducts(response.content);
+            setTotalPages(response.totalPages);
+        } catch (error) {
+            // Si el error es debido a la cancelación intencional, lo ignoramos
+            if (error.name !== "AbortError") {
+                console.error("Failed to fetch products: " + error);
+            }
+        } finally {
+            // Solo desactivamos el loading si esta petición no fue abortada
+            if (!controller.signal.aborted) {
+                setIsLoading(false);
+            }
+        }
+    }
+
+    fetchProducts();
+
+    // Cleanup: Se ejecuta al cambiar las dependencias y cancela la petición anterior
+    return () => {
+        controller.abort();
+    };
+}, [search, page, refreshKey]);
 	function addCategory(newCat){
 		if(!categories.includes(newCat))
 			setCategories(current => [...current, newCat]);
@@ -62,9 +77,9 @@ export default function ProductsPage(){
 				<h1 className="text-2xl font-semibold">Lista de Productos</h1>
 				<Link
 					href='/dashboard/products/new'
-					className="flex items-center gap-2 px-4 py-2 rounded-md bg-[#54E98A] text-[#003919]"
+					className="flex items-center gap-2 px-4 py-2 bg-[#54E98A] rounded-md text-[#003919] font-semibold hover:opacity-90 transition-all"
 				>
-					<Plus />
+					<Plus size={18}/>
 					Agregar Producto
 				</Link>
 			</div>
