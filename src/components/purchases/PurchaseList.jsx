@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Eye, ChevronLeft, ChevronRight } from "lucide-react";
 import { getPurchases } from "@/lib/purchases";
 import { getSupplierById } from "@/lib/suppliers.js";
+import { formatCurrency } from "@/lib/utils"
 
 export default function PurchaseList({ search }) {
     const [purchases, setPurchases] = useState([]);
@@ -111,7 +112,7 @@ export default function PurchaseList({ search }) {
                                         <td className="text-left font-semibold text-[#D7E5EC]">{p.invoiceNumber}</td>
                                         <td className="text-left">{supName}</td>
                                         <td className="text-center">{p.date || (p.transactionDate ? p.transactionDate.split('T')[0] : '')}</td>
-                                        <td className="text-right text-[#54E98A]">₲ {(p.total || p.totalAmount || 0).toLocaleString()}</td>
+                                        <td className="text-right text-[#54E98A]"> {formatCurrency(p.total || p.totalAmount || 0)}</td>
                                         <td className="text-center">
                                             <Link
                                                 href={`/dashboard/purchases/${p.id}`}

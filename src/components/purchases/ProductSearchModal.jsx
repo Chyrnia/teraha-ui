@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Search, Plus, X } from "lucide-react";
 import { getProducts } from "@/lib/products";
+import { formatCurrency } from "@/lib/utils";
 
 export default function ProductSearchModal({ isOpen, onClose, onSelectProduct, onCreateNewProduct }) {
     const [search, setSearch] = useState("");
@@ -63,7 +64,7 @@ export default function ProductSearchModal({ isOpen, onClose, onSelectProduct, o
                         <input
                             type="text"
                             autoFocus
-                            placeholder="Buscar por código, SKU o descripción..."
+                            placeholder="Buscar por código o descripción..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             className="w-full bg-transparent py-2 text-[#D7E5EC] outline-none placeholder:text-[#6B7280]"
@@ -101,7 +102,7 @@ export default function ProductSearchModal({ isOpen, onClose, onSelectProduct, o
                                         <p className="text-sm font-medium text-[#D7E5EC]">{p.description}</p>
                                     </div>
                                     <span className="text-xs text-[#BBCBBB] mt-1 block">
-                                        Stock actual: {p.stock} | Costo: ₲ {(p.cost || 0).toLocaleString()} | Precio Venta: ₲ {(p.price || 0).toLocaleString()}
+                                        Stock actual: {p.stock} | Costo: {(formatCurrency(p.cost) || 0).toLocaleString()} | Precio Venta: {(formatCurrency(p.price) || 0).toLocaleString()}
                                     </span>
                                 </div>
                                 <span className="text-xs text-[#54E98A] font-semibold">Seleccionar</span>

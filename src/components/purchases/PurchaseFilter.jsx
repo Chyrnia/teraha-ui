@@ -26,7 +26,7 @@ export default function PurchaseFilter({ search, setSearch, suppliers, addSuppli
                     <input
                         id="purchase-search"
                         type="search"
-                        placeholder="Buscar por factura o proveedor..."
+                        placeholder="Buscar por N° factura o proveedor..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         className="flex-1 bg-transparent border-none py-1 px-4 text-[#6B7280] placeholder:text-[#6B7280] outline-none"

@@ -13,6 +13,7 @@ import {
 
 import { hasRole } from "@/lib/auth.js";
 import { deleteProduct } from "@/lib/products.js";
+import { formatCurrency } from "@lib/utils.js"
 
 export default function ProductList({
     products,
@@ -96,7 +97,7 @@ export default function ProductList({
                                 <td>{product.code}</td>
                                 <td>{product.description}</td>
                                 <td className="text-right">
-                                    {product.price}
+                                    {formatCurrency(product.price)}
                                 </td>
                                 <td className="text-center">
                                     {product.stock}

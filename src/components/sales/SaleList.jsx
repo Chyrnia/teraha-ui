@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Eye, ChevronLeft, ChevronRight } from "lucide-react";
 import { getSales } from "@/lib/sales";
 import { getClientById } from "@/lib/clients";
+import { formatCurrency } from "@/lib/utils";
 
 export default function SaleList({ search }) {
     const [sales, setSales] = useState([]);
@@ -115,7 +116,7 @@ export default function SaleList({ search }) {
                                         <td className="text-left font-semibold text-[#D7E5EC]">{s.invoiceNumber}</td>
                                         <td className="text-left">{clientName}</td>
                                         <td className="text-center">{saleDate}</td>
-                                        <td className="text-right text-[#54E98A]">₲ {saleTotal.toLocaleString()}</td>
+                                        <td className="text-right text-[#54E98A]">{formatCurrency(saleTotal)}</td>
                                         <td className="text-center">
                                             <Link
                                                 href={`/dashboard/sales/${s.id}`}

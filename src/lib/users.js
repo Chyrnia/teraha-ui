@@ -30,7 +30,7 @@ export async function createUser(userData) {
             username: userData.username,
             email: userData.email,
             password: userData.password,
-            roles: userData.roles // Array de strings, ej: ["MANAGER"]
+            roles: userData.roles 
         })
     };
     return await authenticatedFetch("/users", options);

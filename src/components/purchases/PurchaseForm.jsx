@@ -8,12 +8,13 @@ import QuickProductModal from "./QuickProductModal.jsx";
 import SupplierSearchModal from "./SupplierSearchModal";
 import { getProducts } from "@/lib/products";
 import { createPurchaseInvoice } from "@/lib/purchases";
+import { formatCurrency } from "@/lib/utils"
 
 export default function PurchaseForm() {
     const router = useRouter();
     
     const [header, setHeader] = useState({
-        supplierId: null, // Guardamos el ID real para el objeto thirdParty
+        supplierId: null, 
         supplier: "",
         ruc: "",
         seller: "Retail Manager",
@@ -330,7 +331,7 @@ export default function PurchaseForm() {
                                 </td>
 
                                 <td className="py-3 px-4 text-right text-[#54E98A] font-semibold">
-                                    ₲ {(item.cost * item.quantity).toLocaleString()}
+                                     {formatCurrency(item.cost * item.quantity)}
                                 </td>
 
                                 <td className="py-3 px-4 text-center">
@@ -400,7 +401,7 @@ export default function PurchaseForm() {
                     <div className="text-right">
                         <span className="block text-xs uppercase text-[#BBCBBB]">TOTAL A PAGAR</span>
                         <span className="text-2xl font-bold text-[#54E98A]">
-                            ₲ {totalAmount.toLocaleString()}
+                            {formatCurrency(totalAmount)}
                         </span>
                     </div>
 

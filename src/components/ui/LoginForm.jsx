@@ -47,7 +47,7 @@ export default function LoginForm() {
 
         try {
             await login(loginForm);
-            router.replace("/dashboard");
+            router.replace("/dashboard/sales");
         } catch (err) {
             if (
                 err instanceof Error &&

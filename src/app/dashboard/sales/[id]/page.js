@@ -6,6 +6,7 @@ import { ArrowLeft, Ban, Printer } from "lucide-react";
 import { getSaleById, cancelSale } from "@/lib/sales";
 import { getClientById } from "@/lib/clients";
 import { getProductById } from "@/lib/products";
+import {formatCurrency} from "@lib/utils"
 
 export default function SaleDetailPage({ params }) {
     const resolvedParams = use(params);
@@ -198,7 +199,7 @@ export default function SaleDetailPage({ params }) {
                 <div className="hidden print:flex justify-between items-start border-b-2 border-black pb-4 mb-6">
                     <div>
                         <h2 className="text-xl font-bold uppercase tracking-wide text-black">
-                            ESENCIA - GESTIÓN DE VENTAS
+                            Teraha
                         </h2>
                         <p className="text-xs text-gray-700">Comprobante de Factura Emitida</p>
                     </div>
@@ -290,10 +291,10 @@ export default function SaleDetailPage({ params }) {
                                         <td className="py-3 px-4 text-center print:border print:border-black">{idx + 1}</td>
                                         <td className="py-3 px-4 font-mono print:border print:border-black">{item.code}</td>
                                         <td className="py-3 px-4 font-medium print:border print:border-black">{item.description}</td>
-                                        <td className="py-3 px-4 text-right print:border print:border-black">₲ {item.unitPrice.toLocaleString()}</td>
+                                        <td className="py-3 px-4 text-right print:border print:border-black">{formatCurrency(item.unitPrice)}</td>
                                         <td className="py-3 px-4 text-center font-bold print:border print:border-black">{item.quantity}</td>
                                         <td className="py-3 px-4 text-right text-[#54E98A] font-semibold print:text-black print:border print:border-black">
-                                            ₲ {subtotal.toLocaleString()}
+                                            {formatCurrency(subtotal)}
                                         </td>
                                     </tr>
                                 );
@@ -306,7 +307,7 @@ export default function SaleDetailPage({ params }) {
                     <div className="text-right border-2 border-black p-3 bg-[#101D22] print:bg-gray-50 min-w-[260px] rounded-lg print:rounded-none">
                         <span className="block text-xs uppercase text-[#BBCBBB] print:text-black font-bold">TOTAL FACTURA</span>
                         <span className="text-2xl font-bold text-[#54E98A] print:text-black">
-                            ₲ {totalAmount.toLocaleString()}
+                            {formatCurrency(totalAmount)}
                         </span>
                     </div>
                 </div>
