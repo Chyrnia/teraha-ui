@@ -17,6 +17,47 @@ export async function getSuppliers(filters = {}, options = {}) {
     return await authenticatedFetch(path, options);
 }
 
+export async function getAllSuppliers(filters = {}, options = {}) {
+    const safeFilters =
+        typeof filters === "string"
+            ? { search: filters }
+            : (filters || {});
+
+    const { search = "" } = safeFilters;
+
+    const suppliers = [];
+    let page = 0;
+    let lastPage = false;
+
+    while (!lastPage) {
+        const params = new URLSearchParams({
+            page: String(page)
+        });
+
+        const searchTerm = String(search).trim();
+
+        if (searchTerm) {
+            params.set("search", searchTerm);
+        }
+
+        const response = await authenticatedFetch(
+            `/suppliers?${params}`,
+            options
+        );
+
+        if (!Array.isArray(response.content)) {
+            throw new Error("Respuesta de proveedores inesperada.");
+        }
+
+        suppliers.push(...response.content);
+
+        lastPage = response.last;
+        page++;
+    }
+
+    return suppliers;
+}
+
 export async function createSupplier(supplierData) {
     const options = {
         method: "POST",
@@ -41,7 +82,7 @@ export async function getSupplierById(id) {
 
 export async function updateSupplier(id, supplierData) {
     const options = {
-        method: "PUT",
+        method: "PATCH",
         body: JSON.stringify({
             name: supplierData.name,
             document: supplierData.document,

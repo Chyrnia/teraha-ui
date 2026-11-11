@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 
 import { createProduct, updateProduct } from "@/lib/products.js";
-import { getSuppliers } from "@/lib/suppliers.js";
+import { getAllSuppliers } from "@/lib/suppliers.js";
 
 const INITIAL_PRODUCT = {
     code: "",
@@ -59,7 +59,7 @@ export default function ProductForm({
                 setLoadingSuppliers(true);
                 setSupplierError("");
 
-                const result = await getSuppliers();
+                const result = await getAllSuppliers();
 
                 if (!cancelled) {
                     setSuppliers(result);
