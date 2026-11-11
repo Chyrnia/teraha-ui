@@ -13,7 +13,7 @@ import {
 
 import { hasRole } from "@/lib/auth.js";
 import { deleteProduct } from "@/lib/products.js";
-import { formatCurrency } from "@lib/utils.js"
+import { formatCurrency } from "@/lib/utils.js"
 
 export default function ProductList({
     products,
