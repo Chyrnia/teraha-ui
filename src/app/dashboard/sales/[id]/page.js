@@ -6,7 +6,7 @@ import { ArrowLeft, Ban, Printer } from "lucide-react";
 import { getSaleById, cancelSale } from "@/lib/sales";
 import { getClientById } from "@/lib/clients";
 import { getProductById } from "@/lib/products";
-import {formatCurrency} from "@lib/utils"
+import { formatCurrency } from "@/lib/utils"
 
 export default function SaleDetailPage({ params }) {
     const resolvedParams = use(params);
