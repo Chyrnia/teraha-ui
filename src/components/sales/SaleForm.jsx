@@ -40,12 +40,30 @@ export default function SaleForm() {
     }, [items]);
 
     const handleAddProduct = (product) => {
+        // 1. Obtenemos el stock disponible del producto (ajusta a 'product.stock' según tu base de datos)
+        const availableStock = product.stock ?? 0;
+
         const existingIndex = items.findIndex(i => i.code === product.code);
+
         if (existingIndex >= 0) {
+            // El producto ya está en la lista, calculamos la cantidad futura al sumarle 1
+            const nextQuantity = items[existingIndex].quantity + 1;
+
+            if (nextQuantity > availableStock) {
+                alert(`Stock insuficiente. Solo hay ${availableStock} unidades disponibles de "${product.description || product.code}".`);
+                return; // Detenemos para que no supere el stock
+            }
+
             const updated = [...items];
-            updated[existingIndex].quantity += 1;
+            updated[existingIndex].quantity = nextQuantity;
             setItems(updated);
         } else {
+            // Es un producto nuevo, validamos si su stock es 0 o menor
+            if (availableStock <= 0) {
+                alert(`El producto "${product.description || product.code}" tiene stock cero (0) y no se puede añadir a la factura.`);
+                return; // Detenemos para que no se agregue
+            }
+
             setItems([
                 ...items,
                 {
@@ -57,6 +75,7 @@ export default function SaleForm() {
                 }
             ]);
         }
+        
         setSkuInput("");
     };
 
@@ -183,15 +202,6 @@ export default function SaleForm() {
                         />
                     </div>
 
-                    <div>
-                        <label className="block text-xs font-semibold text-[#BBCBBB] mb-2">VENDEDOR</label>
-                        <input
-                            type="text"
-                            readOnly
-                            value={header.seller}
-                            className="w-full bg-[#041015] border border-[#3D4A3E] rounded-md px-4 py-2 text-[#BBCBBB] outline-none"
-                        />
-                    </div>
                 </div>
             </div>
 

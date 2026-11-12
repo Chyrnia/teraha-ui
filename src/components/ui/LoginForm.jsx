@@ -49,7 +49,7 @@ async function handleSubmit(e) {
             // 1. Ejecutas el login (y guardas el resultado si el backend te devuelve los datos del usuario)
             const response = await login(loginForm);
 
-            // 2. Guardas el nombre o el objeto del usuario en el localStorage para que el Header, Ventas y Compras lo lean
+            // 2. Guardas el nombre o el objeto del usuario en el localStorage
             // (Si tu backend devuelve un objeto con el nombre o usuario, úsalo; si solo devuelve el token, guardamos tu nombre de usuario ingresado)
             const userName = response?.name || response?.username || loginForm.username;
             const userEmail = response?.email || "aylen@teraha.com";

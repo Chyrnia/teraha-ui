@@ -121,7 +121,6 @@ export default function Header(){
                             <div className="absolute right-0 mt-2 w-56 bg-[#142126] border border-[#3D4A3E] rounded-xl shadow-2xl overflow-hidden z-50">
                                 <div className="px-4 py-3 border-b border-[#3D4A3E]">
                                     <p className="text-xs font-bold text-white truncate">{currentUser.name}</p>
-                                    <p className="text-[11px] text-[#54E98A] truncate">{currentUser.email || "Sesión Activa"}</p>
                                 </div>
 
                                 <div className="p-1">

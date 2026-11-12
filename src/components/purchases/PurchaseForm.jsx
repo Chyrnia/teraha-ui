@@ -17,7 +17,6 @@ export default function PurchaseForm() {
         supplierId: null, 
         supplier: "",
         ruc: "",
-        seller: "Retail Manager",
         date: new Date().toISOString().split('T')[0],
         invoiceNumber: "",
         paymentCondition: "Contado"
@@ -97,7 +96,6 @@ export default function PurchaseForm() {
             supplierId: null,
             supplier: "",
             ruc: "",
-            seller: "Retail Manager",
             date: new Date().toISOString().split('T')[0],
             invoiceNumber: "",
             paymentCondition: "Contado"
@@ -147,7 +145,6 @@ export default function PurchaseForm() {
                 supplierId: null,
                 supplier: "",
                 ruc: "",
-                seller: "Retail Manager",
                 date: new Date().toISOString().split('T')[0],
                 invoiceNumber: "",
                 paymentCondition: "Contado"
@@ -224,16 +221,6 @@ export default function PurchaseForm() {
                             readOnly
                             placeholder="RUC del proveedor"
                             value={header.ruc}
-                            className="w-full bg-[#041015] border border-[#3D4A3E] rounded-md px-4 py-2 text-[#BBCBBB] outline-none"
-                        />
-                    </div>
-
-                    <div>
-                        <label className="block text-xs font-semibold text-[#BBCBBB] mb-2">VENDEDOR</label>
-                        <input
-                            type="text"
-                            readOnly
-                            value={header.seller}
                             className="w-full bg-[#041015] border border-[#3D4A3E] rounded-md px-4 py-2 text-[#BBCBBB] outline-none"
                         />
                     </div>

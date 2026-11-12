@@ -30,7 +30,10 @@ export default function SupplierSearchModal({ isOpen, onClose, onSelectSupplier 
                 setLoading(true);
                 try {
                     const data = await getSuppliers(search);
-                    setSuppliers(data);
+                    
+                    // Si el backend devuelve paginación (Page), extraemos .content; si es array plano, lo usamos directo
+                    const list = Array.isArray(data) ? data : (data?.content || []);
+                    setSuppliers(list);
                 } catch (err) {
                     console.error("Error al cargar proveedores:", err);
                 } finally {
@@ -38,7 +41,6 @@ export default function SupplierSearchModal({ isOpen, onClose, onSelectSupplier 
                 }
             }
 
-            // Un pequeño debounce para no saturar la API en cada tecla
             const timer = setTimeout(() => {
                 loadSuppliers();
             }, 300);

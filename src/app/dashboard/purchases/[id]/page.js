@@ -232,16 +232,6 @@ export default function PurchaseDetailPage({ params }) {
                             className="w-full bg-[#041015] border border-[#3D4A3E] rounded-md px-4 py-2 text-[#D7E5EC] outline-none print:bg-transparent print:border-0 print:border-b print:border-black print:rounded-none print:px-0 print:py-1 print:text-black print:font-medium"
                         />
                     </div>
-
-                    <div className="print:hidden">
-                        <label className="block text-xs font-semibold text-[#BBCBBB] mb-2">VENDEDOR</label>
-                        <input
-                            type="text"
-                            readOnly
-                            value="Retail Manager"
-                            className="w-full bg-[#041015] border border-[#3D4A3E] rounded-md px-4 py-2 text-[#BBCBBB] outline-none"
-                        />
-                    </div>
                 </div>
 
                 <div className="grid grid-cols-3 gap-6 mb-6 print:grid-cols-1 print:gap-4">

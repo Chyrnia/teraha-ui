@@ -18,6 +18,7 @@ import {
 
 import { getProductById } from "@/lib/products.js";
 import { getSuppliers } from "@/lib/suppliers.js";
+import { getAllSuppliers } from "@/lib/suppliers.js";
 
 function formatNumber(value) {
     if (value === null || value === undefined || value === "") {
@@ -96,7 +97,7 @@ export default function ProductDetails({ id }) {
 
                 if (supplierIds.length > 0) {
                     try {
-                        const allSuppliers = await getSuppliers();
+                        const allSuppliers = await getAllSuppliers();
 
                         if (!ignore) {
                             setSuppliers(

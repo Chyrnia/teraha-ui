@@ -158,7 +158,7 @@ export function getCurrentUser() {
         console.error(e);
     }
 
-    // Valor de respaldo para que siempre muestre tu nombre real en el header, ventas y compras
+    // Valor de prueba 
     return { 
         name: "Aylén Arzamendia", 
         email: "0986269811" 
