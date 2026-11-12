@@ -118,3 +118,49 @@ export function hasRole(role) {
         return false;
     }
 }
+
+/*export function getCurrentUser() {
+    if (typeof window === "undefined") return { name: "Retail Manager", email: "" };
+    
+    // Intenta obtener el objeto de usuario o el nombre guardado en localStorage
+    try {
+        const userStr = localStorage.getItem("user") || localStorage.getItem("username");
+        if (userStr) {
+            // Si está guardado como objeto JSON o como texto plano
+            const userObj = JSON.parse(userStr);
+            return {
+                name: userObj.name || userObj.username || userStr,
+                email: userObj.email || "usuario@teraha.com"
+            };
+        }
+    } catch (e) {
+        // Si es un string simple guardado en localStorage
+        const simpleName = localStorage.getItem("username") || localStorage.getItem("user");
+        if (simpleName) return { name: simpleName, email: "" };
+    }
+
+    return { name: "Retail Manager", email: "admin@teraha.com" };
+}*/
+
+export function getCurrentUser() {
+    if (typeof window === "undefined") return { name: "Aylén Arzamendia", email: "0986269811" };
+    
+    try {
+        const userJson = localStorage.getItem("user");
+        if (userJson) {
+            const parsed = JSON.parse(userJson);
+            return {
+                name: parsed.name || parsed.username || "Aylén Arzamendia",
+                email: parsed.email || "0986269811"
+            };
+        }
+    } catch (e) {
+        console.error(e);
+    }
+
+    // Valor de respaldo para que siempre muestre tu nombre real en el header, ventas y compras
+    return { 
+        name: "Aylén Arzamendia", 
+        email: "0986269811" 
+    };
+}

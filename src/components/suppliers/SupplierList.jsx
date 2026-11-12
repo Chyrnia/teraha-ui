@@ -40,13 +40,6 @@ export default function SupplierList({ suppliers, page, totalPages, onPageChange
                                             >
                                                 <Eye size={18} />
                                             </Link>
-                                            <Link
-                                                href={`/dashboard/suppliers/${supplier.id}/edit`}
-                                                className="text-[#BBCBBB] hover:text-[#54E98A] transition-colors"
-                                                title="Editar proveedor"
-                                            >
-                                                <Pencil size={18} />
-                                            </Link>
                                         </div>
                                     </td>
                                 </tr>

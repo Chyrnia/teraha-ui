@@ -5,7 +5,7 @@ import { Search, Plus, X } from "lucide-react";
 import { getProducts } from "@/lib/products";
 import { formatCurrency } from "@/lib/utils";
 
-export default function ProductSearchModal({ isOpen, onClose, onSelectProduct, onCreateNewProduct }) {
+export default function ProductSearchModal({ isOpen, onClose, onSelectProduct, onCreateNewProduct, showCreateButton = true }) {
     const [search, setSearch] = useState("");
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -70,6 +70,7 @@ export default function ProductSearchModal({ isOpen, onClose, onSelectProduct, o
                             className="w-full bg-transparent py-2 text-[#D7E5EC] outline-none placeholder:text-[#6B7280]"
                         />
                     </div>
+                    {showCreateButton && (
                     <button
                         type="button"
                         onClick={onCreateNewProduct}
@@ -78,6 +79,7 @@ export default function ProductSearchModal({ isOpen, onClose, onSelectProduct, o
                         <Plus size={18} />
                         <span>Nuevo Express</span>
                     </button>
+                    )}
                 </div>
 
                 {/* Resultados de la Búsqueda */}

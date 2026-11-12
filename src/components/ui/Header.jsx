@@ -5,25 +5,28 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
     Bell, 
-    CircleQuestionMark, 
     CircleUserRound, 
     Settings, 
     LogOut,
     X,
     Mail,
-    PhoneCall,
     Send,
     CheckCircle2,
-    MessageSquare
+    MessageSquare,
+    HelpCircle
 } from 'lucide-react';
+import { getCurrentUser } from '@/lib/auth'; // <--- Importamos tu función helper
 
-export default function Header({ user }){
+export default function Header(){
     const router = useRouter();
     
     // Estados para menús desplegables y modales
     const [userDropdownOpen, setUserDropdownOpen] = useState(false);
     const [supportModalOpen, setSupportModalOpen] = useState(false);
     
+    // Estado para la información del usuario usando el helper
+    const [currentUser, setCurrentUser] = useState({ name: "Retail Manager", email: "" });
+
     // Estados del formulario de soporte
     const [supportSubject, setSupportSubject] = useState("");
     const [supportMessage, setSupportMessage] = useState("");
@@ -31,6 +34,12 @@ export default function Header({ user }){
     const [isSending, setIsSending] = useState(false);
 
     const userDropdownRef = useRef(null);
+
+    // Cargar datos reales del usuario al montar el componente
+    useEffect(() => {
+        const user = getCurrentUser();
+        setCurrentUser(user);
+    }, []);
 
     useEffect(() => {
         function handleClickOutside(event) {
@@ -44,7 +53,9 @@ export default function Header({ user }){
 
     const handleLogout = () => {
         localStorage.removeItem("token");
-        router.push("http://localhost:3000/login");
+        localStorage.removeItem("user");
+        localStorage.removeItem("username");
+        router.push("/login");
     };
 
     const handleSendSupport = (e) => {
@@ -53,7 +64,6 @@ export default function Header({ user }){
 
         setIsSending(true);
 
-        // Simulación de envío de ticket de soporte
         setTimeout(() => {
             setIsSending(false);
             setSupportSent(true);
@@ -69,7 +79,7 @@ export default function Header({ user }){
 
     return(
         <>
-            <div className="flex flex-row items-center h-16 px-6 border-b bg-[#142126] border-[#3D4A3E] relative">
+            <div className="flex flex-row items-center h-16 px-6 border-b bg-[#142126] border-[#3D4A3E] relative z-40">
                 <div className="brand text-2xl font-semibold text-[#54E98A]">
                     <h2>Teraha</h2>
                 </div>
@@ -92,7 +102,7 @@ export default function Header({ user }){
                         }`}
                         title="Contactar a Soporte"
                     >
-                        <CircleQuestionMark size={26} />
+                        <HelpCircle size={26} />
                     </button>
 
                     {/* Menú Desplegable de Perfil */}
@@ -108,10 +118,10 @@ export default function Header({ user }){
                         </button>
 
                         {userDropdownOpen && (
-                            <div className="absolute right-0 mt-2 w-48 bg-[#142126] border border-[#3D4A3E] rounded-xl shadow-2xl overflow-hidden z-50">
+                            <div className="absolute right-0 mt-2 w-56 bg-[#142126] border border-[#3D4A3E] rounded-xl shadow-2xl overflow-hidden z-50">
                                 <div className="px-4 py-3 border-b border-[#3D4A3E]">
-                                    <p className="text-xs font-semibold text-white">Mi Cuenta</p>
-                                    <p className="text-[11px] text-[#54E98A]">Sesión Activa</p>
+                                    <p className="text-xs font-bold text-white truncate">{currentUser.name}</p>
+                                    <p className="text-[11px] text-[#54E98A] truncate">{currentUser.email || "Sesión Activa"}</p>
                                 </div>
 
                                 <div className="p-1">
@@ -150,7 +160,7 @@ export default function Header({ user }){
                         <div className="flex items-center justify-between border-b border-[#3D4A3E] bg-[#101D22]/80 px-6 py-4">
                             <div className="flex items-center gap-2.5">
                                 <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#54E98A]/10 text-[#54E98A]">
-                                    <CircleQuestionMark size={20} />
+                                    <HelpCircle size={20} />
                                 </div>
                                 <div>
                                     <h3 className="text-sm font-semibold text-white">Centro de Soporte y Ayuda</h3>

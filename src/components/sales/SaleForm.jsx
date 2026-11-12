@@ -7,6 +7,7 @@ import ProductSearchModal from "@/components/purchases/ProductSearchModal";
 import ClientSearchModal from "@/components/sales/ClientSearchModal";
 import { getProducts } from "@/lib/products";
 import { createSaleInvoice } from "@/lib/sales";
+import { formatCurrency } from "@/lib/utils"
 
 export default function SaleForm() {
     const router = useRouter();
@@ -192,28 +193,6 @@ export default function SaleForm() {
                         />
                     </div>
                 </div>
-
-                <div className="grid grid-cols-2 gap-6">
-                    <div>
-                        <label className="block text-xs font-semibold text-[#BBCBBB] mb-2">FECHA (AUTOGENERADA)</label>
-                        <input
-                            type="text"
-                            readOnly
-                            value={header.date}
-                            className="w-full bg-[#041015] border border-[#3D4A3E] rounded-md px-4 py-2 text-[#BBCBBB] outline-none cursor-not-allowed"
-                        />
-                    </div>
-
-                    <div>
-                        <label className="block text-xs font-semibold text-[#BBCBBB] mb-2">Nº FACTURA (AUTOGENERADO)</label>
-                        <input
-                            type="text"
-                            readOnly
-                            value={header.invoiceNumber}
-                            className="w-full bg-[#041015] border border-[#3D4A3E] rounded-md px-4 py-2 text-[#BBCBBB] outline-none cursor-not-allowed font-mono text-[#54E98A]"
-                        />
-                    </div>
-                </div>
             </div>
 
             {/* TABLA DE PRODUCTOS */}
@@ -269,7 +248,7 @@ export default function SaleForm() {
                                 </td>
 
                                 <td className="py-3 px-4 text-right text-[#54E98A] font-semibold">
-                                    ₲ {(item.price * item.quantity).toLocaleString()}
+                                    {formatCurrency(item.price * item.quantity)}
                                 </td>
 
                                 <td className="py-3 px-4 text-center">
@@ -333,7 +312,7 @@ export default function SaleForm() {
                     <div className="text-right">
                         <span className="block text-xs uppercase text-[#BBCBBB]">TOTAL A PAGAR</span>
                         <span className="text-2xl font-bold text-[#54E98A]">
-                            ₲ {totalAmount.toLocaleString()}
+                            {formatCurrency(totalAmount)}
                         </span>
                     </div>
 
@@ -355,6 +334,7 @@ export default function SaleForm() {
                 onClose={() => setIsSearchOpen(false)}
                 onSelectProduct={handleAddProduct}
                 onCreateNewProduct={() => setIsSearchOpen(false)}
+                showCreateButton={false}
             />
 
             <ClientSearchModal

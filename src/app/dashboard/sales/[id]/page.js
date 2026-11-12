@@ -6,7 +6,8 @@ import { ArrowLeft, Ban, Printer } from "lucide-react";
 import { getSaleById, cancelSale } from "@/lib/sales";
 import { getClientById } from "@/lib/clients";
 import { getProductById } from "@/lib/products";
-import { formatCurrency } from "@/lib/utils"
+import {formatCurrency} from "@/lib/utils"
+import { getCurrentUser } from "@/lib/auth";
 
 export default function SaleDetailPage({ params }) {
     const resolvedParams = use(params);
@@ -20,7 +21,14 @@ export default function SaleDetailPage({ params }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
+
+    // 2. Estado para el vendedor autenticado
+    const [sellerName, setSellerName] = useState("Cargando...");
+
     useEffect(() => {
+        const currentUser = getCurrentUser();
+        setSellerName(currentUser.name);
+
         async function fetchSaleDetail() {
             try {
                 setLoading(true);
@@ -242,7 +250,7 @@ export default function SaleDetailPage({ params }) {
                         <input
                             type="text"
                             readOnly
-                            value="Retail Manager"
+                            value={sellerName}
                             className="w-full bg-[#041015] border border-[#3D4A3E] rounded-md px-4 py-2 text-[#BBCBBB] outline-none"
                         />
                     </div>
